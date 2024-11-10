@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/graylog-project" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/graylog-project-repos/graylog-plugin-aws" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/graylog-project-repos/graylog-plugin-collector" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/graylog-project-repos/graylog-plugin-integrations" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/graylog-project-repos/graylog-plugin-threatintel" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/graylog-project-repos/graylog2-server" vcs="Git" />
+  </component>
+</project>

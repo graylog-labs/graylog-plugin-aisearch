@@ -1,0 +1,17 @@
+:local(.sidecarModal) {
+    font-size: 14px;
+}
+
+:local(.sidecarModal) div {
+    padding: 10px 15px;
+}
+
+:local(.sidecarModal) h4 {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+:local(.sidecarModal) p {
+    margin-bottom: 15px;
+}

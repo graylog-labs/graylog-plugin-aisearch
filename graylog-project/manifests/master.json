@@ -1,0 +1,45 @@
+{
+  "modules": [
+    {
+      "repository": "git@github.com:Graylog2/graylog2-server.git",
+      "revision": "master",
+      "server": true,
+      "submodules": [
+        {
+          "path": "graylog2-server"
+        },
+        {
+          "path": "graylog2-web-interface"
+        },
+        {
+          "path": "graylog-storage-elasticsearch6"
+        },
+        {
+          "path": "distribution",
+          "assemblies": ["graylog"],
+          "assembly_attachment": "graylog-server-tarball"
+        }
+      ]
+    },
+    {
+      "repository": "git@github.com:Graylog2/graylog-plugin-collector.git",
+      "revision": "master",
+      "assemblies": ["graylog"]
+    },
+    {
+      "repository": "git@github.com:Graylog2/graylog-plugin-aws.git",
+      "revision": "master",
+      "assemblies": ["graylog"]
+    },
+    {
+      "repository": "git@github.com:Graylog2/graylog-plugin-threatintel.git",
+      "revision": "master",
+      "assemblies": ["graylog"]
+    },
+    {
+      "repository": "git@github.com:Graylog2/graylog-plugin-integrations.git",
+      "revision": "master",
+      "assemblies": ["graylog-integrations"]
+    }
+  ]
+}

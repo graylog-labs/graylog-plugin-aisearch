@@ -1,0 +1,125 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PivotConfigGenerator should add a event annotation config when configured 1`] = `
+{
+  "config": {
+    "column_groups": [],
+    "id": "vals",
+    "rollup": true,
+    "row_groups": [
+      {
+        "fields": [
+          "field",
+        ],
+        "limit": 15,
+        "skip_empty_values": false,
+        "type": "type",
+      },
+    ],
+    "series": [
+      {
+        "id": "count",
+      },
+    ],
+    "sort": [],
+  },
+  "id": Any<String>,
+  "name": "chart",
+  "type": "pivot",
+}
+`;
+
+exports[`PivotConfigGenerator should add a event annotation config when configured 2`] = `
+{
+  "id": Any<String>,
+  "name": "events",
+  "type": "events",
+}
+`;
+
+exports[`PivotConfigGenerator should generate a chart config 1`] = `
+{
+  "column_groups": [],
+  "id": Any<String>,
+  "rollup": true,
+  "row_groups": [
+    {
+      "fields": [
+        "field",
+      ],
+      "limit": 15,
+      "skip_empty_values": false,
+      "type": "type",
+    },
+  ],
+  "series": [
+    {
+      "id": "count",
+    },
+  ],
+  "sort": [],
+}
+`;
+
+exports[`PivotConfigGenerator should generate a number config with trend 1`] = `
+{
+  "config": {
+    "column_groups": [],
+    "id": "vals",
+    "rollup": true,
+    "row_groups": [
+      {
+        "fields": [
+          "field",
+        ],
+        "limit": 15,
+        "skip_empty_values": false,
+        "type": "type",
+      },
+    ],
+    "series": [
+      {
+        "id": "count",
+      },
+    ],
+    "sort": [],
+  },
+  "id": Any<String>,
+  "name": "chart",
+  "type": "pivot",
+}
+`;
+
+exports[`PivotConfigGenerator should generate a number config with trend 2`] = `
+{
+  "config": {
+    "column_groups": [],
+    "id": "vals",
+    "rollup": true,
+    "row_groups": [
+      {
+        "fields": [
+          "field",
+        ],
+        "limit": 15,
+        "skip_empty_values": false,
+        "type": "type",
+      },
+    ],
+    "series": [
+      {
+        "id": "count",
+      },
+    ],
+    "sort": [],
+  },
+  "id": Any<String>,
+  "name": "trend",
+  "timerange": {
+    "id": Any<String>,
+    "source": "search_type",
+    "type": "offset",
+  },
+  "type": "pivot",
+}
+`;

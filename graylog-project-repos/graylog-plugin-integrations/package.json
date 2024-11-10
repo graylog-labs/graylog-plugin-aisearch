@@ -1,0 +1,47 @@
+{
+  "name": "graylog-plugin-integrations",
+  "version": "5.2.0-SNAPSHOT",
+  "description": "",
+  "license": "SSPL-1.0",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Graylog2/graylog-plugin-integrations.git"
+  },
+  "scripts": {
+    "build": "webpack",
+    "test": "jest --maxWorkers=50%",
+    "lint": "eslint src",
+    "lint:path": "eslint",
+    "lint:styles": "stylelint './src/web/**/*.{js,jsx,ts,tsx}' --syntax css-in-js",
+    "lint:styles:path": "stylelint --syntax css-in-js"
+  },
+  "eslintConfig": {
+    "extends": "graylog"
+  },
+  "stylelint": {
+    "extends": "stylelint-config-graylog"
+  },
+  "keywords": [
+    "graylog"
+  ],
+  "author": "Graylog, Inc. <hello@graylog.com>",
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "graylog-web-plugin": "file:../graylog2-server/graylog2-web-interface/packages/graylog-web-plugin",
+    "urijs": "^1.19.10"
+  },
+  "devDependencies": {
+    "@babel/core": "7.18.2",
+    "@babel/plugin-proposal-class-properties": "7.17.12",
+    "@babel/plugin-syntax-dynamic-import": "7.8.3",
+    "@babel/plugin-transform-runtime": "7.18.2",
+    "@babel/preset-env": "7.18.2",
+    "@babel/preset-react": "7.12.10",
+    "@testing-library/user-event": "^14.2.0",
+    "babel-plugin-add-module-exports": "1.0.4",
+    "babel-plugin-dynamic-import-node": "2.3.3",
+    "babel-plugin-styled-components": "1.11.1",
+    "identity-obj-proxy": "^3.0.0"
+  },
+  "private": true
+}

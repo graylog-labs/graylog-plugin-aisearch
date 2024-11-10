@@ -1,0 +1,10 @@
+window.appConfig = {
+  gl2ServerUrl: '${serverUri}',
+  gl2AppPathPrefix: '${appPathPrefix}',
+  rootTimeZone: '${rootTimeZone}',
+  pluginUISettings: ${pluginUISettings},
+  isCloud: ${isCloud},
+  featureFlags: ${featureFlags},
+  telemetry: ${telemetry},
+  contentStream: ${contentStream}
+};

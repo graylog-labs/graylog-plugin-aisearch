@@ -1,0 +1,32 @@
+{
+  "name": "graylog-plugin-aws",
+  "version": "5.2.0-SNAPSHOT",
+  "description": "Graylog plugins to integrate with different AWS services like CloudTrail and FlowLogs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/graylog-plugin-aws"
+  },
+  "scripts": {
+    "build": "webpack",
+    "lint": "eslint src",
+    "lint:path": "eslint"
+  },
+  "eslintConfig": {
+    "extends": "graylog"
+  },
+  "keywords": [
+    "graylog"
+  ],
+  "author": "Graylog, Inc. <hello@graylog.com>",
+  "license": "SSPL-1.0",
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "urijs": "^1.19.10"
+  },
+  "devDependencies": {
+    "graylog-web-plugin": "file:../graylog2-server/graylog2-web-interface/packages/graylog-web-plugin"
+  },
+  "resolutions": {
+    "upath": "1.0.5"
+  }
+}

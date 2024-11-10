@@ -1,0 +1,59 @@
+.collector-os {
+    margin-right: 5px;
+    margin-left: 2px;
+}
+
+.name {
+    width: 300px;
+}
+
+#collector-configurations-list th.actions, td.actions {
+    width: 150px;
+}
+
+#collector-outputs-list th.actions, td.actions {
+    width: 150px;
+}
+
+#collector-inputs-list th.actions, td.actions {
+    width: 150px;
+}
+
+#collector-snippets-list th.actions, td.actions {
+    width: 150px;
+}
+
+.deflist {
+    margin-top: 10px;
+}
+
+.deflist dt {
+    float: left;
+    clear: left;
+}
+
+.deflist dd {
+    margin-left: 160px;
+}
+
+.top-margin {
+    margin-top: 10px;
+}
+
+hr.separator {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.collector-name {
+    word-break: break-all;
+}
+
+.configuration-tag {
+    font-weight: normal;
+    margin-right: 2px;
+}
+
+.configuration-tag-sm {
+    font-size: 80%;
+}

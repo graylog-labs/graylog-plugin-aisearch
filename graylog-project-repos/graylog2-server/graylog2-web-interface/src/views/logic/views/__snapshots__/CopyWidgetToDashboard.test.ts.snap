@@ -1,0 +1,149 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`copyWidgetToDashboard should copy a widget to a dashboard 1`] = `
+{
+  "created_at": 2019-06-14T09:48:10.550Z,
+  "description": "",
+  "id": "5d03952f7aafdc6c1cdc014c",
+  "owner": "admin",
+  "properties": Immutable.List [],
+  "search_id": "new-search-id",
+  "state": Immutable.Map {
+    "f0a1f93c-8400-40de-83ac-94149dbf447c": {
+      "formatting": {
+        "highlighting": [],
+      },
+      "positions": Immutable.Map {
+        "dead-beef": {
+          "col": 1,
+          "height": 4,
+          "row": 1,
+          "width": 4,
+        },
+        "546b13fe-eae7-4fb8-abb9-e0e3a907c3e6": {
+          "col": 1,
+          "height": 3,
+          "row": 9,
+          "width": "Infinity",
+        },
+        "32889f0b-fe5a-4f18-baa0-773869d49af3": {
+          "col": 1,
+          "height": 6,
+          "row": 14,
+          "width": "Infinity",
+        },
+        "8532ff94-2881-42b4-b26d-080d09305e95": {
+          "col": 1,
+          "height": 2,
+          "row": 12,
+          "width": "Infinity",
+        },
+        "a8058a41-34ea-4846-83d0-1acc2fbc1d7f": {
+          "col": 1,
+          "height": 4,
+          "row": 5,
+          "width": "Infinity",
+        },
+      },
+      "selected_fields": [
+        "source",
+        "message",
+      ],
+      "titles": Immutable.Map {
+        "widget": Immutable.Map {
+          "8532ff94-2881-42b4-b26d-080d09305e95": "Message Count",
+          "32889f0b-fe5a-4f18-baa0-773869d49af3": "All Messages",
+          "a8058a41-34ea-4846-83d0-1acc2fbc1d7f": "Aggregating stddev(files_changed) by author (copy)",
+          "dead-beef": "Widget Title",
+        },
+      },
+      "widget_mapping": Immutable.Map {
+        "a8058a41-34ea-4846-83d0-1acc2fbc1d7f": Immutable.Set [
+          "dead-beef",
+        ],
+        "dead-beef": Immutable.Set [
+          "dead-beef",
+        ],
+      },
+      "widgets": Immutable.List [
+        {
+          "config": {
+            "column_pivots": [],
+            "formatting_settings": {
+              "chart_colors": {
+                "stddev(files_changed)": "#8bc34a",
+              },
+            },
+            "rollup": true,
+            "row_pivots": [
+              {
+                "config": {
+                  "limit": 15,
+                },
+                "field": "author",
+                "type": "values",
+              },
+            ],
+            "series": [
+              {
+                "config": {
+                  "name": null,
+                },
+                "function": "stddev(files_changed)",
+              },
+            ],
+            "sort": [],
+            "visualization": "bar",
+            "visualization_config": null,
+          },
+          "filter": undefined,
+          "filters": Immutable.List [],
+          "id": "a8058a41-34ea-4846-83d0-1acc2fbc1d7f",
+          "query": {
+            "query_string": "",
+            "type": "elasticsearch",
+          },
+          "stream_categories": undefined,
+          "streams": [],
+          "timerange": null,
+          "type": "aggregation",
+        },
+        {
+          "config": {
+            "column_pivots": [],
+            "rollup": true,
+            "row_pivots": [],
+            "series": [
+              {
+                "config": {
+                  "name": "Message Count",
+                },
+                "function": "count()",
+              },
+            ],
+            "sort": [],
+            "visualization": "numeric",
+          },
+          "filter": undefined,
+          "filters": Immutable.List [],
+          "id": "dead-beef",
+          "query": {
+            "query_string": "",
+            "type": "elasticsearch",
+          },
+          "stream_categories": undefined,
+          "streams": [],
+          "timerange": {
+            "range": 300,
+            "type": "relative",
+          },
+          "type": "aggregation",
+        },
+      ],
+    },
+  },
+  "summary": "",
+  "title": "GIT data 5",
+  "type": "DASHBOARD",
+}
+`;

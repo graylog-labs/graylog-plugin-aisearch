@@ -1,0 +1,89 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`EntityShareState should import from json 1`] = `
+{
+  "active_shares": [
+    {
+      "capability": "grn::::capability:54e3deadbeefdeadbeef0002",
+      "grant": "grn::::grant:5ee2393bb3ceb9225f056efe",
+      "grantee": "grn::::user:john",
+    },
+    {
+      "capability": "grn::::capability:54e3deadbeefdeadbeef0002",
+      "grant": "grn::::grant:5ee2393bb3ceb9225f056fef",
+      "grantee": "grn::::user:jane",
+    },
+  ],
+  "available_capabilities": [
+    {
+      "id": "grn::::capability:54e3deadbeefdeadbeef0000",
+      "title": "Viewer",
+    },
+    {
+      "id": "grn::::capability:54e3deadbeefdeadbeef0001",
+      "title": "Manager",
+    },
+    {
+      "id": "grn::::capability:54e3deadbeefdeadbeef0002",
+      "title": "Owner",
+    },
+  ],
+  "available_grantees": [
+    {
+      "id": "grn::::builtin-team:everyone",
+      "title": "Everyone",
+      "type": "global",
+    },
+    {
+      "id": "grn::::team:security",
+      "title": "Security Folks",
+      "type": "team",
+    },
+    {
+      "id": "grn::::user:jane",
+      "title": "Jane Doe",
+      "type": "user",
+    },
+    {
+      "id": "grn::::user:john",
+      "title": "John Doe",
+      "type": "user",
+    },
+  ],
+  "entity": "grn::::dashboard:57bc9188e62a2373778d9e06",
+  "missing_permissions_on_dependencies": {
+    "grn::::user:jane": [
+      {
+        "id": "grn::::stream:57bc9188e62a2373778d9e03",
+        "owners": Immutable.List [
+          {
+            "id": "grn::::user:john",
+            "title": "Jane Doe",
+            "type": "user",
+          },
+          {
+            "id": "grn::::team:security",
+            "title": "Security Folks",
+            "type": "team",
+          },
+        ],
+        "title": "Security Data",
+        "type": "stream",
+      },
+    ],
+  },
+  "selected_grantee_capabilities": {
+    "grn::::team:security": "grn::::capability:54e3deadbeefdeadbeef0000",
+    "grn::::user:jane": "grn::::capability:54e3deadbeefdeadbeef0001",
+  },
+  "validation_result": {
+    "error_context": {
+      "selected_grantee_capabilities": Immutable.List [],
+    },
+    "errors": {
+      "selected_grantee_capabilities": Immutable.List [],
+    },
+    "failed": false,
+  },
+}
+`;
