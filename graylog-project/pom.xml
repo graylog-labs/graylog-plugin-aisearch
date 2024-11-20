@@ -48,6 +48,7 @@
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
     </properties>
 
+
     <dependencies>
         <dependency>
             <groupId>org.graylog2</groupId>
@@ -79,7 +80,16 @@
             <artifactId>graylog-plugin-integrations</artifactId>
             <version>5.2.0-SNAPSHOT</version>
         </dependency>
-        
+        <dependency>
+        <groupId>com.squareup</groupId>
+        <artifactId>javapoet</artifactId>
+        <version>1.13.0</version>
+    </dependency>
+    <dependency>
+        <groupId>com.google.auto.value</groupId>
+        <artifactId>auto-value</artifactId>
+        <version>1.10.1</version>
+	</dependency>
     </dependencies>
 
     <build>
