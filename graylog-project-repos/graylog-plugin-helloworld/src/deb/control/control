@@ -1,8 +1,0 @@
-Package: [[name]]
-Version: [[version]]
-Architecture: all
-Maintainer: Manas <Magu6288@colorado.edu>
-Section: web
-Priority: optional
-Depends: graylog-server | graylog-radio
-Description: [[description]]

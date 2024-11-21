@@ -24,8 +24,8 @@
         <module>../graylog-project-repos/graylog-plugin-aws</module>
         <module>../graylog-project-repos/graylog-plugin-threatintel</module>
         <module>../graylog-project-repos/graylog-plugin-integrations</module>
-        <module>../graylog-project-repos/graylog-plugin-helloworld</module>
-        
+        <module>../graylog-project-repos/graylog-plugin-ai-search</module>
+
     </modules>
 
     <properties>
