@@ -1,0 +1,399 @@
+/*
+ * Copyright (C) 2020 Graylog, Inc.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Server Side Public License, version 1,
+ * as published by MongoDB, Inc.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Server Side Public License for more details.
+ *
+ * You should have received a copy of the Server Side Public License
+ * along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
+ */
+package org.graylog.plugins.views.search.export;
+
+import com.google.common.collect.ImmutableSet;
+import org.graylog.plugins.views.search.Query;
+import org.graylog.plugins.views.search.Search;
+import org.graylog.plugins.views.search.elasticsearch.ElasticsearchQueryString;
+import org.graylog.plugins.views.search.elasticsearch.QueryStringDecorators;
+import org.graylog.plugins.views.search.engine.PositionTrackingQuery;
+import org.graylog.plugins.views.search.filter.AndFilter;
+import org.graylog.plugins.views.search.filter.StreamFilter;
+import org.graylog.plugins.views.search.searchfilters.model.InlineQueryStringSearchFilter;
+import org.graylog.plugins.views.search.searchtypes.MessageList;
+import org.graylog.plugins.views.search.searchtypes.pivot.Pivot;
+import org.graylog2.decorators.Decorator;
+import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
+import org.graylog2.plugin.indexer.searches.timeranges.InvalidRangeParametersException;
+import org.graylog2.plugin.indexer.searches.timeranges.RelativeRange;
+import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.graylog.plugins.views.search.export.ExportMessagesCommand.DEFAULT_FIELDS;
+import static org.graylog.plugins.views.search.export.ExportMessagesCommand.defaultTimeRange;
+import static org.graylog.plugins.views.search.export.TestData.relativeRange;
+import static org.graylog.plugins.views.search.export.TestData.validQueryBuilder;
+import static org.graylog.plugins.views.search.export.TestData.validQueryBuilderWith;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.mock;
+
+class CommandFactoryTest {
+
+    private CommandFactory sut;
+
+    @BeforeEach
+    void setUp() {
+        final QueryStringDecorators emptyDecorator = new QueryStringDecorators(Optional.empty());
+        sut = new CommandFactory(emptyDecorator);
+    }
+
+    @Test
+    void buildsCommandFromRequest() {
+        MessagesRequest request = MessagesRequest.builder().build();
+        ExportMessagesCommand command = sut.buildFromRequest(request);
+
+        assertAll(
+                () -> assertThat(command.queryString()).isEqualTo(request.queryString()),
+                () -> assertThat(command.streams()).isEqualTo(request.streams()),
+                () -> assertThat(command.fieldsInOrder()).isEqualTo(request.fieldsInOrder()),
+                () -> assertThat(command.limit()).isEqualTo(request.limit()),
+                () -> assertThat(command.chunkSize()).isEqualTo(request.chunkSize())
+        );
+    }
+
+    @Test
+    void throwsIfSearchTypeIsNotMessageList() {
+        Pivot p = Pivot.builder().id("pivot-id").series(newArrayList()).rollup(false).build();
+
+        Query q = org.graylog.plugins.views.search.TestData.validQueryBuilder().searchTypes(ImmutableSet.of(p)).build();
+
+        Search s = searchWithQueries(q);
+
+        assertThatExceptionOfType(ExportException.class)
+                .isThrownBy(() -> sut.buildWithMessageList(s, p.id(), ResultFormat.builder().build()))
+                .withMessageContaining("supported");
+    }
+
+    @Test
+    void searchWithMultipleQueriesLeadsToExceptionIfNoSearchTypeProvided() {
+        Search s = searchWithQueries(org.graylog.plugins.views.search.TestData.validQueryBuilder().build(), org.graylog.plugins.views.search.TestData.validQueryBuilder().build());
+
+        assertThatExceptionOfType(ExportException.class)
+                .isThrownBy(() -> sut.buildWithSearchOnly(s, ResultFormat.builder().build()))
+                .withMessageContaining("multiple queries");
+    }
+
+    @Test
+    void convertsTimeRangeToAbsolute() {
+        RelativeRange relative = relativeRange(100);
+        MessagesRequest request = MessagesRequest.builder().timeRange(relative).build();
+
+        ExportMessagesCommand command = sut.buildFromRequest(request);
+
+        assertThat(command.timeRange()).isInstanceOf(AbsoluteRange.class);
+    }
+
+    @Test
+    void takesRequestParamsFromSearch() {
+        Query query = validQueryBuilder()
+                .filter(streamFilter("stream-1", "stream-2"))
+                .query(ElasticsearchQueryString.of("huhu"))
+                .build();
+        Search s = searchWithQueries(query);
+
+        ExportMessagesCommand command = buildFrom(s);
+
+        assertThat(command.timeRange()).isEqualTo(query.timerange());
+        assertThat(command.queryString()).isEqualTo(query.query());
+        assertThat(command.streams()).isEqualTo(query.usedStreamIds());
+    }
+
+    @Test
+    void buildsCommandWithSearchFilters() {
+        final InlineQueryStringSearchFilter sampleSearchFilter = InlineQueryStringSearchFilter.builder()
+                .queryString("smth")
+                .id("id")
+                .title("title")
+                .build();
+
+        MessageList ml = MessageList.builder().id("ml-id")
+                .streams(ImmutableSet.of("stream-1", "stream-2"))
+                .build();
+
+        Query query = validQueryBuilderWith(ml)
+                .filters(List.of(sampleSearchFilter))
+                .build();
+        Search s = searchWithQueries(query);
+
+        ResultFormat resultFormat = ResultFormat.builder()
+                .fieldsInOrder("field-1", "field-2")
+                .limit(100)
+                .build();
+
+        ExportMessagesCommand command = sut.buildWithSearchOnly(s, resultFormat);
+        assertThat(command.usedSearchFilters()).isEqualTo(List.of(sampleSearchFilter));
+
+
+        command = sut.buildWithMessageList(s, "ml-id", resultFormat);
+        assertThat(command.usedSearchFilters()).isEqualTo(List.of(sampleSearchFilter));
+    }
+
+    @Test
+    void takesRequestParamsFromResultFormat() {
+        Query query = validQueryBuilder().build();
+        Search s = searchWithQueries(query);
+
+        ResultFormat resultFormat = ResultFormat.builder()
+                .fieldsInOrder("field-1", "field-2")
+                .limit(100)
+                .build();
+
+        ExportMessagesCommand command = buildFrom(s, resultFormat);
+
+        assertThat(command.fieldsInOrder()).isEqualTo(resultFormat.fieldsInOrder());
+        assertThat(command.limit().orElseThrow(IllegalStateException::new)).isEqualTo(resultFormat.limit().orElseThrow(IllegalStateException::new));
+    }
+
+    @Test
+    void takesDefaultsIfNoResultsFormatSpecified() {
+        Query query = validQueryBuilder().build();
+        Search s = searchWithQueries(query);
+
+        ResultFormat resultFormat = ResultFormat.builder()
+                .build();
+
+        ExportMessagesCommand command = buildFrom(s, resultFormat);
+
+        assertThat(command.fieldsInOrder()).isEqualTo(DEFAULT_FIELDS);
+    }
+
+    @Test
+    void takesStreamsFromSearchTypeIfNotEmpty() {
+        MessageList ml = MessageList.builder().id("ml-id")
+                .streams(ImmutableSet.of("stream-1", "stream-2"))
+                .build();
+        Query q = validQueryBuilderWith(ml).filter(streamFilter("stream-3")).build();
+
+        Search s = searchWithQueries(q);
+
+        ExportMessagesCommand command = buildFrom(s, ml.id());
+
+        assertThat(command.streams()).isEqualTo(ml.effectiveStreams());
+    }
+
+    @Test
+    void takesStreamsFromQueryIfEmptyOnSearchType() {
+        MessageList ml = MessageList.builder().id("ml-id").build();
+
+        Query q = validQueryBuilderWith(ml).filter(streamFilter("stream-3")).build();
+
+        Search s = searchWithQueries(q);
+
+        ExportMessagesCommand command = buildFrom(s, ml.id());
+
+        assertThat(command.streams()).isEqualTo(q.usedStreamIds());
+    }
+
+    @Test
+    void takesQueryStringFromMessageListIfOnlySpecifiedThere() {
+        MessageList ml = MessageList.builder().id("ml-id")
+                .query(ElasticsearchQueryString.of("nacken"))
+                .build();
+        Query q = validQueryBuilderWith(ml).build();
+
+        Search s = searchWithQueries(q);
+
+        ExportMessagesCommand command = buildFrom(s, ml.id());
+
+        //noinspection OptionalGetWithoutIsPresent
+        assertThat(command.queryString()).isEqualTo(ml.query().get());
+    }
+
+    @Test
+    void takesQueryStringFromQueryIfOnlySpecifiedThere() {
+        MessageList ml = MessageList.builder().id("ml-id")
+                .build();
+        Query q = validQueryBuilderWith(ml)
+                .query(ElasticsearchQueryString.of("nacken"))
+                .build();
+
+        Search s = searchWithQueries(q);
+
+        ExportMessagesCommand command = buildFrom(s, ml.id());
+
+        assertThat(command.queryString()).isEqualTo(q.query());
+    }
+
+    @Test
+    void takesCombinedQueryStringFromQueryAndMessageList() {
+        MessageList ml = MessageList.builder().id("ml-id")
+                .query(ElasticsearchQueryString.of("qux OR quux"))
+                .build();
+        Query q = validQueryBuilderWith(ml)
+                .query(ElasticsearchQueryString.of("foo OR bar"))
+                .build();
+
+        Search s = searchWithQueries(q);
+
+        ExportMessagesCommand command = buildFrom(s, ml.id());
+
+        assertThat(command.queryString()).isEqualTo(ElasticsearchQueryString.of("(foo OR bar) AND (qux OR quux)"));
+    }
+
+    @Test
+    void combinesQueryStringIfSpecifiedOnMessageListAndQuery() {
+        MessageList ml = MessageList.builder().id("ml-id")
+                .query(ElasticsearchQueryString.of("from-messagelist"))
+                .build();
+        Query q = validQueryBuilderWith(ml)
+                .query(ElasticsearchQueryString.of("from-query"))
+                .build();
+
+        Search s = searchWithQueries(q);
+
+        ExportMessagesCommand command = buildFrom(s, ml.id());
+
+        ElasticsearchQueryString combined = ElasticsearchQueryString.of("(from-query) AND (from-messagelist)");
+
+        assertThat(command.queryString())
+                .isEqualTo(combined);
+    }
+
+    @Test
+    void takesTimeRangeFromMessageListIfSpecified() {
+        AbsoluteRange messageListTimeRange = defaultTimeRange();
+        MessageList ml = MessageList.builder().id("ml-id").timerange(messageListTimeRange).build();
+
+        Query q = validQueryBuilderWith(ml).timerange(timeRange(222)).build();
+
+        Search s = searchWithQueries(q);
+
+        ExportMessagesCommand command = buildFrom(s, ml.id());
+
+        assertThat(command.timeRange()).isEqualTo(messageListTimeRange);
+    }
+
+    @Test
+    void takesTimeRangeFromQueryIfNotSpecifiedOnMessageList() {
+        MessageList ml = MessageList.builder().id("ml-id").build();
+
+        Query q = validQueryBuilderWith(ml).build();
+
+        Search s = searchWithQueries(q);
+
+        ExportMessagesCommand command = buildFrom(s, ml.id());
+
+        assertThat(command.timeRange()).isEqualTo(q.timerange());
+    }
+
+    @Test
+    void takesDecoratorsFromMessageList() {
+        Decorator decorator = mock(Decorator.class);
+        MessageList ml = MessageList.builder().id("ml-id")
+                .decorators(newArrayList(decorator))
+                .build();
+        Query q = validQueryBuilderWith(ml).build();
+
+        Search s = searchWithQueries(q);
+
+        ExportMessagesCommand command = buildFrom(s, ml.id());
+
+        assertThat(command.decorators()).containsExactly(decorator);
+    }
+
+    @Test
+    void takesFieldsFromResultFormatIfSpecified() {
+        MessageList ml = MessageList.builder().id("ml-id").build();
+        Query q = validQueryBuilderWith(ml).build();
+
+        Search s = searchWithQueries(q);
+
+        ResultFormat resultFormat = ResultFormat.builder().fieldsInOrder("field-1", "field-2").build();
+
+        ExportMessagesCommand command = buildFrom(s, ml.id(), resultFormat);
+
+        assertThat(command.fieldsInOrder()).isEqualTo(resultFormat.fieldsInOrder());
+    }
+
+    @Test
+    void takesDefaultFieldsIfNotSpecifiedInResultFormat() {
+        MessageList ml = MessageList.builder().id("ml-id").build();
+
+        Query q = validQueryBuilderWith(ml).build();
+
+        Search s = searchWithQueries(q);
+
+        ExportMessagesCommand command = buildFrom(s, ml.id(), ResultFormat.builder().build());
+
+        assertThat(command.fieldsInOrder()).isEqualTo(DEFAULT_FIELDS);
+    }
+
+    @Test
+    void appliesQueryDecorators() {
+        Query q = validQueryBuilder().query(ElasticsearchQueryString.of("undecorated")).build();
+        Search s = searchWithQueries(q);
+
+
+        final QueryStringDecorators decorators = new QueryStringDecorators(Optional.of((queryString, parameterProvider, query) -> {
+            if (queryString.equals("undecorated")) {
+                return PositionTrackingQuery.of("decorated");
+            } else {
+                throw new IllegalArgumentException("Unexpected query " + queryString);
+            }
+        }));
+
+        ExportMessagesCommand command = new CommandFactory(decorators).buildWithSearchOnly(s, ResultFormat.builder().build());
+
+        assertThat(command.queryString()).isEqualTo(ElasticsearchQueryString.of("decorated"));
+    }
+
+    private ExportMessagesCommand buildFrom(Search s) {
+        return buildFrom(s, ResultFormat.builder().build());
+    }
+
+    private ExportMessagesCommand buildFrom(Search s, ResultFormat resultFormat) {
+        return sut.buildWithSearchOnly(s, resultFormat);
+    }
+
+    private ExportMessagesCommand buildFrom(Search search, String messageListId) {
+        return buildFrom(search, messageListId, ResultFormat.builder().build());
+    }
+
+    private ExportMessagesCommand buildFrom(Search search, String messageListId, ResultFormat resultFormat) {
+        return sut.buildWithMessageList(search, messageListId, resultFormat);
+    }
+
+    private AndFilter streamFilter(String... streamIds) {
+        StreamFilter[] filters = Arrays.stream(streamIds)
+                .map(StreamFilter::ofId)
+                .toArray(StreamFilter[]::new);
+        return AndFilter.and(filters);
+    }
+
+    private Search searchWithQueries(Query... queries) {
+        return Search.builder().id("search-id")
+                .queries(ImmutableSet.copyOf(queries)).build();
+    }
+
+    private TimeRange timeRange(@SuppressWarnings("SameParameterValue") int range) {
+        try {
+            return RelativeRange.create(range);
+        } catch (InvalidRangeParametersException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+}

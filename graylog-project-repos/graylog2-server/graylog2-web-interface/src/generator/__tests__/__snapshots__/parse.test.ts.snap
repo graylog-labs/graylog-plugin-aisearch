@@ -1,0 +1,550 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parse parses an api properly 1`] = `
+{
+  "description": undefined,
+  "models": {
+    "AuthzRoleDTO": {
+      "additionalProperties": undefined,
+      "id": "urn:jsonschema:org:graylog:security:authzroles:AuthzRoleDTO",
+      "properties": {
+        "description": {
+          "name": "string",
+          "optional": false,
+          "type": "type_reference",
+        },
+        "id": {
+          "name": "string",
+          "optional": false,
+          "type": "type_reference",
+        },
+        "name": {
+          "name": "string",
+          "optional": false,
+          "type": "type_reference",
+        },
+        "permissions": {
+          "items": {
+            "name": "string",
+            "optional": false,
+            "type": "type_reference",
+          },
+          "type": "array",
+        },
+        "read_only": {
+          "name": "boolean",
+          "optional": false,
+          "type": "type_reference",
+        },
+      },
+      "type": "type_literal",
+    },
+    "PaginatedResponse": {
+      "additionalProperties": {
+        "name": "unknown",
+        "optional": false,
+        "type": "type_reference",
+      },
+      "id": undefined,
+      "properties": {},
+      "type": "type_literal",
+    },
+    "stringArray": {
+      "id": "stringArray",
+      "items": {
+        "name": "string",
+        "optional": false,
+        "type": "type_reference",
+      },
+      "type": "array",
+    },
+  },
+  "name": "sample",
+  "routes": [
+    {
+      "operations": [
+        {
+          "method": "GET",
+          "nickname": "getList",
+          "parameters": [
+            {
+              "defaultValue": "1",
+              "description": "",
+              "name": "page",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "name": "number",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "defaultValue": "50",
+              "description": "",
+              "name": "per_page",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "name": "number",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "description": "",
+              "name": "query",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "name": "string",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "defaultValue": "name",
+              "description": "The field to sort the result on",
+              "name": "sort",
+              "paramType": "query",
+              "required": true,
+              "type": {
+                "defaultValue": "name",
+                "name": "string",
+                "options": [
+                  "name",
+                  "description",
+                ],
+                "type": "enum",
+              },
+            },
+            {
+              "defaultValue": "asc",
+              "description": "The sort direction",
+              "name": "order",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "defaultValue": "asc",
+                "name": "string",
+                "options": [
+                  "asc",
+                  " desc",
+                ],
+                "type": "enum",
+              },
+            },
+          ],
+          "path": undefined,
+          "produces": [
+            "application/json",
+          ],
+          "summary": "Get a paginated list of all roles",
+          "type": {
+            "name": "PaginatedResponse",
+            "optional": false,
+            "type": "type_reference",
+          },
+        },
+      ],
+      "path": "/authz/roles",
+    },
+    {
+      "operations": [
+        {
+          "method": "GET",
+          "nickname": "getListForUser",
+          "parameters": [
+            {
+              "description": "",
+              "name": "username",
+              "paramType": "path",
+              "required": false,
+              "type": {
+                "name": "string",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "defaultValue": "1",
+              "description": "",
+              "name": "page",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "name": "number",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "defaultValue": "50",
+              "description": "",
+              "name": "per_page",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "name": "number",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "description": "",
+              "name": "query",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "name": "string",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "defaultValue": "name",
+              "description": "The field to sort the result on",
+              "name": "sort",
+              "paramType": "query",
+              "required": true,
+              "type": {
+                "defaultValue": "name",
+                "name": "string",
+                "options": [
+                  "name",
+                  "description",
+                ],
+                "type": "enum",
+              },
+            },
+            {
+              "defaultValue": "asc",
+              "description": "The sort direction",
+              "name": "order",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "defaultValue": "asc",
+                "name": "string",
+                "options": [
+                  "asc",
+                  " desc",
+                ],
+                "type": "enum",
+              },
+            },
+          ],
+          "path": undefined,
+          "produces": [
+            "application/json",
+          ],
+          "summary": "Get a paginated list roles for a user",
+          "type": {
+            "name": "PaginatedResponse",
+            "optional": false,
+            "type": "type_reference",
+          },
+        },
+      ],
+      "path": "/authz/roles/user/{username}",
+    },
+    {
+      "operations": [
+        {
+          "method": "GET",
+          "nickname": "get",
+          "parameters": [
+            {
+              "description": "",
+              "name": "roleId",
+              "paramType": "path",
+              "required": false,
+              "type": {
+                "name": "string",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+          ],
+          "path": undefined,
+          "produces": [
+            "application/json",
+          ],
+          "summary": "Get a single role",
+          "type": {
+            "name": "AuthzRoleDTO",
+            "optional": false,
+            "type": "type_reference",
+          },
+        },
+      ],
+      "path": "/authz/roles/{roleId}",
+    },
+    {
+      "operations": [
+        {
+          "method": "DELETE",
+          "nickname": "delete",
+          "parameters": [
+            {
+              "description": "",
+              "name": "roleId",
+              "paramType": "path",
+              "required": false,
+              "type": {
+                "name": "string",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+          ],
+          "path": undefined,
+          "produces": [
+            "application/json",
+          ],
+          "summary": "Delete a role",
+          "type": {
+            "name": "void",
+            "optional": false,
+            "type": "type_reference",
+          },
+        },
+      ],
+      "path": "/authz/roles/{roleId}",
+    },
+    {
+      "operations": [
+        {
+          "method": "DELETE",
+          "nickname": "removeUser",
+          "parameters": [
+            {
+              "description": "",
+              "name": "roleId",
+              "paramType": "path",
+              "required": false,
+              "type": {
+                "name": "string",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "description": "",
+              "name": "username",
+              "paramType": "path",
+              "required": false,
+              "type": {
+                "name": "string",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+          ],
+          "path": undefined,
+          "produces": [
+            "application/json",
+          ],
+          "summary": "Remove user from role",
+          "type": {
+            "name": "void",
+            "optional": false,
+            "type": "type_reference",
+          },
+        },
+      ],
+      "path": "/authz/roles/{roleId}/assignee/{username}",
+    },
+    {
+      "operations": [
+        {
+          "method": "GET",
+          "nickname": "getUsersForRole",
+          "parameters": [
+            {
+              "description": "",
+              "name": "roleId",
+              "paramType": "path",
+              "required": false,
+              "type": {
+                "name": "string",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "defaultValue": "1",
+              "description": "",
+              "name": "page",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "name": "number",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "defaultValue": "50",
+              "description": "",
+              "name": "per_page",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "name": "number",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "description": "",
+              "name": "query",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "name": "string",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "defaultValue": "name",
+              "description": "The field to sort the result on",
+              "name": "sort",
+              "paramType": "query",
+              "required": true,
+              "type": {
+                "defaultValue": "name",
+                "name": "string",
+                "options": [
+                  "username",
+                  "full_name",
+                  "email",
+                  "name",
+                ],
+                "type": "enum",
+              },
+            },
+            {
+              "defaultValue": "asc",
+              "description": "The sort direction",
+              "name": "order",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "defaultValue": "asc",
+                "name": "string",
+                "options": [
+                  "asc",
+                  " desc",
+                ],
+                "type": "enum",
+              },
+            },
+          ],
+          "path": undefined,
+          "produces": [
+            "application/json",
+          ],
+          "summary": "Get a paginated list of users for a role",
+          "type": {
+            "name": "PaginatedResponse",
+            "optional": false,
+            "type": "type_reference",
+          },
+        },
+      ],
+      "path": "/authz/roles/{roleId}/assignees",
+    },
+    {
+      "operations": [
+        {
+          "method": "PUT",
+          "nickname": "addUser",
+          "parameters": [
+            {
+              "description": "",
+              "name": "roleId",
+              "paramType": "path",
+              "required": false,
+              "type": {
+                "name": "string",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+            {
+              "description": "",
+              "name": "usernames",
+              "paramType": "body",
+              "required": false,
+              "type": {
+                "name": "stringArray",
+                "optional": false,
+                "type": "type_reference",
+              },
+            },
+          ],
+          "path": undefined,
+          "produces": [
+            "application/json",
+          ],
+          "summary": "Add user to role",
+          "type": {
+            "name": "void",
+            "optional": false,
+            "type": "type_reference",
+          },
+        },
+      ],
+      "path": "/authz/roles/{roleId}/assignees",
+    },
+  ],
+}
+`;
+
+exports[`parse parses operation with query parameter 1`] = `
+{
+  "description": undefined,
+  "models": {},
+  "name": "grok",
+  "routes": [
+    {
+      "operations": [
+        {
+          "method": "POST",
+          "nickname": "bulkUpdatePatternsFromTextFile",
+          "parameters": [
+            {
+              "description": "Strategy to apply when importing.",
+              "name": "import-strategy",
+              "paramType": "query",
+              "required": false,
+              "type": {
+                "name": "string",
+                "options": [
+                  "ABORT_ON_CONFLICT",
+                  "REPLACE_ON_CONFLICT",
+                  "DROP_ALL_EXISTING",
+                ],
+                "type": "enum",
+              },
+            },
+          ],
+          "path": undefined,
+          "produces": [
+            "application/json",
+          ],
+          "summary": "Add a list of new patterns",
+          "type": {
+            "name": "unknown",
+            "optional": false,
+            "type": "type_reference",
+          },
+        },
+      ],
+      "path": "/system/grok",
+    },
+  ],
+}
+`;

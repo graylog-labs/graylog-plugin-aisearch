@@ -1,0 +1,232 @@
+/*
+ * Copyright (C) 2020 Graylog, Inc.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Server Side Public License, version 1,
+ * as published by MongoDB, Inc.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Server Side Public License for more details.
+ *
+ * You should have received a copy of the Server Side Public License
+ * along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
+ */
+package org.graylog.scheduler;
+
+import com.github.joschi.jadconfig.util.Duration;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.eventbus.Subscribe;
+import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
+import org.graylog.scheduler.clock.JobSchedulerClock;
+import org.graylog.scheduler.eventbus.JobCompletedEvent;
+import org.graylog.scheduler.eventbus.JobSchedulerEventBus;
+import org.graylog.scheduler.worker.JobWorkerPool;
+import org.graylog2.plugin.ServerStatus;
+import org.graylog2.plugin.Tools;
+import org.graylog2.system.shutdown.GracefulShutdownHook;
+import org.graylog2.system.shutdown.GracefulShutdownService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
+@Singleton
+public class JobSchedulerService extends AbstractExecutionThreadService implements GracefulShutdownHook {
+    private static final Logger LOG = LoggerFactory.getLogger(JobSchedulerService.class);
+
+    private final JobExecutionEngine jobExecutionEngine;
+    private final JobSchedulerConfig schedulerConfig;
+    private final JobSchedulerClock clock;
+    private final JobSchedulerEventBus schedulerEventBus;
+    private final ServerStatus serverStatus;
+    private final JobWorkerPool workerPool;
+    private final GracefulShutdownService gracefulShutdownService;
+    private final java.time.Duration shutdownTimeout;
+    private final Duration loopSleepDuration;
+    private final InterruptibleSleeper sleeper = new InterruptibleSleeper();
+    private final ScheduledExecutorService jobHeartbeatExecutor;
+    private Thread executionThread;
+
+    @Inject
+    public JobSchedulerService(JobExecutionEngine.Factory engineFactory,
+                               JobWorkerPool.Factory workerPoolFactory,
+                               JobSchedulerConfig schedulerConfig,
+                               JobSchedulerClock clock,
+                               JobSchedulerEventBus schedulerEventBus,
+                               ServerStatus serverStatus,
+                               GracefulShutdownService gracefulShutdownService,
+                               @Named("shutdown_timeout") int shutdownTimeoutMs,
+                               @Named(JobSchedulerConfiguration.LOOP_SLEEP_DURATION) Duration loopSleepDuration) {
+        this.jobHeartbeatExecutor = createJobHeartbeatExecutor();
+        this.workerPool = workerPoolFactory.create("system", schedulerConfig.numberOfWorkerThreads());
+        this.jobExecutionEngine = engineFactory.create(workerPool);
+        this.schedulerConfig = schedulerConfig;
+        this.clock = clock;
+        this.schedulerEventBus = schedulerEventBus;
+        this.serverStatus = serverStatus;
+        this.gracefulShutdownService = gracefulShutdownService;
+        this.shutdownTimeout = java.time.Duration.ofMillis(shutdownTimeoutMs);
+        this.loopSleepDuration = loopSleepDuration;
+    }
+
+    private ScheduledExecutorService createJobHeartbeatExecutor() {
+        return Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setNameFormat("job-heartbeat-%d")
+                .setDaemon(true)
+                .setUncaughtExceptionHandler(new Tools.LogUncaughtExceptionHandler(LOG))
+                .build());
+    }
+
+    @Override
+    protected void startUp() throws Exception {
+        jobHeartbeatExecutor.scheduleAtFixedRate(this::updateLockedJobs, 0, 15, TimeUnit.SECONDS);
+        schedulerEventBus.register(this);
+        gracefulShutdownService.register(this);
+        this.executionThread = Thread.currentThread();
+    }
+
+    @Override
+    protected void run() throws Exception {
+        // Safety measure to make sure everything is started before we start job scheduling.
+        LOG.debug("Waiting for server to enter RUNNING status before starting the scheduler loop");
+        try {
+            serverStatus.awaitRunning();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.debug("Was interrupted while waiting for server to enter RUNNING state. Aborting.");
+            return;
+        }
+        LOG.debug("Server entered RUNNING state, starting scheduler loop");
+
+        boolean executionEnabled = true;
+        while (isRunning()) {
+            if (!schedulerConfig.canExecute()) {
+                executionEnabled = logExecutionConfigState(executionEnabled, false);
+                clock.sleepUninterruptibly(1, TimeUnit.SECONDS);
+                continue;
+            }
+            executionEnabled = logExecutionConfigState(executionEnabled, true);
+
+            LOG.debug("Starting scheduler loop iteration");
+            try {
+                if (!jobExecutionEngine.execute() && isRunning()) {
+                    // When the execution engine returned false, there are either no free worker threads or no
+                    // runnable triggers. To avoid busy spinning we sleep for the configured duration or until
+                    // we receive a job completion event via the scheduler event bus.
+                    if (sleeper.sleep(loopSleepDuration.getQuantity(), loopSleepDuration.getUnit())) {
+                        LOG.debug("Waited for {} {} because there are either no free worker threads or no runnable triggers",
+                                loopSleepDuration.getQuantity(), loopSleepDuration.getUnit());
+                    }
+                }
+            } catch (InterruptedException e) {
+                LOG.debug("Received interrupted exception", e);
+            } catch (Exception e) {
+                LOG.error("Error running job execution engine", e);
+            }
+            LOG.debug("Ending scheduler loop iteration");
+        }
+    }
+
+    @Subscribe
+    public void handleJobCompleted(JobCompletedEvent triggerCompletedEvent) {
+        // The job execution engine has just completed a job so we want to check for runnable triggers immediately.
+        sleeper.interrupt();
+    }
+
+    @Override
+    public void doGracefulShutdown() throws Exception {
+        stopAsync().awaitTerminated(shutdownTimeout);
+    }
+
+    @Override
+    protected void triggerShutdown() {
+        // We don't want to process events when shutting down, so do this first
+        schedulerEventBus.unregister(this);
+        jobExecutionEngine.shutdown();
+        try {
+            workerPool.shutdown(shutdownTimeout);
+        } catch (InterruptedException e) {
+            LOG.debug("Interrupted while waiting for worker pool shutdown");
+            Thread.currentThread().interrupt();
+        }
+        jobHeartbeatExecutor.shutdown();
+        if (gracefulShutdownService.isRunning()) {
+            gracefulShutdownService.unregister(this);
+        }
+        executionThread.interrupt();
+    }
+
+    private void updateLockedJobs() {
+        jobExecutionEngine.updateLockedJobs();
+    }
+
+    /**
+     * This class provides a sleep method that can be interrupted without interrupting threads.
+     * The same could be achieved by using a {@link CountDownLatch} but that one cannot be reused and we would need
+     * to create new latch objects all the time. This implementation is using a {@link Semaphore} internally which
+     * can be reused.
+     */
+    @VisibleForTesting
+    static class InterruptibleSleeper {
+
+        private final Semaphore semaphore;
+
+        InterruptibleSleeper() {
+            this(new Semaphore(1));
+        }
+
+        @VisibleForTesting
+        InterruptibleSleeper(Semaphore semaphore) {
+            this.semaphore = semaphore;
+        }
+
+        /**
+         * Blocks for the given duration or until interrupted via {@link #interrupt()}.
+         *
+         * @param duration the duration to sleep
+         * @param unit     the duration unit
+         * @return true if slept for the given duration, false if interrupted
+         * @throws InterruptedException if the thread gets interrupted
+         */
+        public boolean sleep(long duration, TimeUnit unit) throws InterruptedException {
+            // First we have to drain all available permits because interrupt() might get called very often and thus
+            // there might be a lot of permits.
+            semaphore.drainPermits();
+            // Now try to acquire a permit. This won't work except #interrupt() got called in the meantime.
+            // It waits for the given duration, basically emulating a sleep.
+            return !semaphore.tryAcquire(duration, unit);
+        }
+
+        /**
+         * Interrupt a {@link #sleep(long, TimeUnit)} call so it unblocks.
+         */
+        public void interrupt() {
+            // Attention: this will increase available permits every time it's called.
+            semaphore.release();
+        }
+    }
+
+    /**
+     * {@link JobSchedulerConfig#canExecute()} may return false for a lot of consecutive calls. We don't want to log
+     * this on every scheduler loop iteration but only when there is a change in state.
+     */
+    private boolean logExecutionConfigState(boolean previouslyEnabled, boolean nowEnabled) {
+        if (previouslyEnabled && !nowEnabled) {
+            LOG.info("Job scheduler execution is disabled. Waiting and trying again until enabled.");
+        } else if (!previouslyEnabled && nowEnabled) {
+            LOG.info("Job scheduler execution is now enabled. Proceeding.");
+        }
+        return nowEnabled;
+    }
+}

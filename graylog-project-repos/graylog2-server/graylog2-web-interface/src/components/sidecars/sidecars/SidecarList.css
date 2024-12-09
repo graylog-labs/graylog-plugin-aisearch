@@ -1,0 +1,17 @@
+:local(.sidecarList) {
+    margin-top: 15px;
+    margin-bottom: 0;
+}
+
+:local(.sidecarsFilter) {
+    margin-top: 5px;
+    display: inline-block;
+}
+
+:local(.actions) {
+    width: 230px;
+}
+
+:local(.inactiveSidecarsButton) {
+    margin-left: 5px;
+}

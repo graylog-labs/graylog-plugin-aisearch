@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <title>${title}</title>
+    <link rel="shortcut icon" href="${appPrefix}assets/favicon.png">
+    ${foreach cssFiles cssFile}
+    <link nonce="${nonce}" href="${appPrefix}assets/${cssfile}" rel="stylesheet">
+    ${end}
+  </head>
+  <body>
+    <div id="app-root" />
+    <script nonce="${nonce}" src="${appPrefix}config.js"></script>
+    ${foreach jsFiles jsFile}
+    <script nonce="${nonce}" src="${appPrefix}assets/${jsFile}"></script>
+    ${end}
+  </body>
+</html>

@@ -1,0 +1,67 @@
+{
+  "users": [
+    {
+      "_id": {
+        "$oid": "54e3deadbeefdeadbeef0001"
+      },
+      "username": "user1",
+      "email": "user1@example.com",
+      "full_name": "User 1",
+      "password": "NO LOGIN",
+      "session_timeout_ms": -1,
+      "timezone": "UTC",
+      "permissions": []
+    },
+    {
+      "_id": {
+        "$oid": "54e3deadbeefdeadbeef0002"
+      },
+      "username": "user2",
+      "email": "user2@example.com",
+      "full_name": "User 2",
+      "password": "NO LOGIN",
+      "session_timeout_ms": -1,
+      "timezone": "UTC",
+      "permissions": []
+    },
+    {
+      "_id": {
+        "$oid": "54e3deadbeefdeadbeef0003"
+      },
+      "username": "user-duplicate",
+      "email": "user-duplicate@example.com",
+      "full_name": "User Duplicate",
+      "password": "NO LOGIN",
+      "session_timeout_ms": -1,
+      "timezone": "UTC",
+      "permissions": []
+    },
+    {
+      "_id": {
+        "$oid": "54e3deadbeefdeadbeef0004"
+      },
+      "username": "user-duplicate",
+      "email": "user-duplicate@example.com",
+      "full_name": "User Duplicate",
+      "password": "NO LOGIN",
+      "session_timeout_ms": -1,
+      "timezone": "UTC",
+      "permissions": []
+    },
+    {
+      "_id": {
+        "$oid": "54e3deadbeefdeadbeef0005"
+      },
+      "auth_service_id": "54e3deadbeefdeadbeef0001",
+      "auth_service_uid": "NmIxY2E3ZWQtMTk3NC00NGM4LTkwOTYtN2Q3OTBlM2Y2MjRmCg==",
+      "username": "external-user1",
+      "email": "external-user1@example.com",
+      "full_name": "External User 1",
+      "password": "NO LOGIN",
+      "session_timeout_ms": -1,
+      "timezone": "UTC",
+      "permissions": [],
+      "external": true
+    }
+  ]
+}

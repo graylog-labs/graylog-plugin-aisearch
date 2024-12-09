@@ -1,0 +1,49 @@
+{
+  "assembly_platforms": ["linux-x64", "linux-aarch64"],
+  "modules": [
+    {
+      "repository": "git@github.com:Graylog2/graylog2-server.git",
+      "revision": "5.1",
+      "server": true,
+      "submodules": [
+        {
+          "path": "graylog2-server"
+        },
+        {
+          "path": "graylog2-web-interface"
+        },
+        {
+          "path": "graylog-storage-elasticsearch7"
+        },
+        {
+          "path": "graylog-storage-opensearch2"
+        },
+        {
+          "path": "distribution",
+          "assemblies": ["graylog"],
+          "assembly_attachment": "graylog-server-tarball"
+        },
+        {
+          "path": "data-node",
+          "assemblies": ["graylog-datanode"],
+          "assembly_attachment": "datanode-tarball"
+        }
+      ]
+    },
+    {
+      "repository": "git@github.com:Graylog2/graylog-plugin-collector.git",
+      "revision": "5.1",
+      "assemblies": ["graylog"]
+    },
+    {
+      "repository": "git@github.com:Graylog2/graylog-plugin-aws.git",
+      "revision": "5.1",
+      "assemblies": ["graylog"]
+    },
+    {
+      "repository": "git@github.com:Graylog2/graylog-plugin-integrations.git",
+      "revision": "5.1",
+      "assemblies": ["graylog"]
+    }
+  ]
+}

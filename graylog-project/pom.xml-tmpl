@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.graylog</groupId>
+    <artifactId>graylog-project</artifactId>
+    <version>{{ .Server.Version }}</version>
+    <packaging>pom</packaging>
+
+    <scm>
+        <connection>scm:git:git@github.com:Graylog2/graylog-project.git</connection>
+        <developerConnection>scm:git:git@github.com:Graylog2/graylog-project.git</developerConnection>
+        <url>https://github.com/Graylog2/graylog-project</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <modules>
+        <module>runner</module>
+
+        {{- range $module := .Modules }}
+        <module>{{ .RelativePath }}</module>
+        {{- end }}
+    </modules>
+
+    <properties>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
+        <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
+        <maven.source.skip>true</maven.source.skip>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <maven.install.skip>true</maven.install.skip>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.site.skip>true</maven.site.skip>
+
+        <!-- Can be used to set a custom suffix for the assembly output -->
+        <assembly.suffix></assembly.suffix>
+
+        <!-- to work around filtering bug, which makes maven.build.timestamp inaccessible -->
+        <build.timestamp>${maven.build.timestamp}</build.timestamp>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Ensure consistent dependency versions by importing the entries
+                 from <dependencyManagement/> in graylog-parent. -->
+            <dependency>
+                <groupId>org.graylog</groupId>
+                <artifactId>graylog-parent</artifactId>
+                <version>{{ .Server.Version }}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        {{- range $dependency := .Dependencies }}
+        <dependency>
+            <groupId>{{ $dependency.GroupId }}</groupId>
+            <artifactId>{{ $dependency.ArtifactId }}</artifactId>
+            <version>{{ $dependency.Version }}</version>
+        </dependency>
+        {{- end }}
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.7.1</version>
+                <inherited>false</inherited>
+                <executions>
+                    {{- range $name, $data := .Assemblies }}
+                    <execution>
+                        <id>generate-{{ $name }}-artifact</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>{{ $name }}-${project.version}-${maven.build.timestamp}${assembly.suffix}</finalName>
+                            <outputDirectory>${project.build.directory}/artifacts/{{ $name }}</outputDirectory>
+                            <descriptors>
+                                <descriptor>src/main/assembly/{{ $name }}.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                    {{- end }}
+                </executions>
+                <configuration>
+                    <attach>false</attach>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
+                    <tarLongFileMode>gnu</tarLongFileMode>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>4.5</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            {{- range $name, $data := .Assemblies }}
+                            <execution>
+                                <id>generate-{{ $name }}-artifact</id>
+                                <configuration>
+                                    <finalName>{{ $name }}-${project.version}</finalName>
+                                </configuration>
+                            </execution>
+                            {{- end }}
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
+

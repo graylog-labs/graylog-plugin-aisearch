@@ -1,0 +1,43 @@
+// various string functions
+rule "string tests"
+when
+    contains("abcdef", "bc") &&
+    lowercase("a MIXED bag of chArs") == "a mixed bag of chars" &&
+    uppercase("a MIXED bag of chArs") == "A MIXED BAG OF CHARS" &&
+    swapcase("Capitalized") == "cAPITALIZED" &&
+    capitalize("hello") == "Hello" &&
+    capitalize("hEllo") == "HEllo" &&
+    uncapitalize("Hello") == "hello" &&
+    uncapitalize("HEllo") == "hEllo" &&
+    abbreviate("", 4)        == "" &&
+    abbreviate("abcdefg", 6) == "abc..." &&
+    abbreviate("abcdefg", 7) == "abcdefg" &&
+    abbreviate("abcdefg", 8) == "abcdefg" &&
+    abbreviate("abcdefg", 4) == "a..." &&
+    concat("foo", "bar") == "foobar" &&
+    starts_with("foobar", "foo") == true &&
+    starts_with("foobar", "") == true &&
+    starts_with("", "foo") == false &&
+    starts_with("foobar", "abc") == false &&
+    starts_with("foobar", "FOO") == false &&
+    starts_with("foobar", "FOO", true) == true &&
+    ends_with("foobar", "bar") == true &&
+    ends_with("foobar", "") == true &&
+    ends_with("", "bar") == false &&
+    ends_with("foobar", "abc") == false &&
+    ends_with("foobar", "BAR") == false &&
+    ends_with("foobar", "BAR", true) == true &&
+    replace("", "") == "" &&
+    replace("", "", "") == "" &&
+    replace("aabbcc", "a", "") == "bbcc" &&
+    replace("aabbcc", "", "zz") == "aabbcc" &&
+    replace("aaa", "a", "b", 1) == "baa" &&
+    replace("abba", "b", "k", 2) == "akka" &&
+    replace("abba", "ab", "ka") == "kaba" &&
+    // Example from https://github.com/Graylog2/graylog2-server/issues/4705
+    replace("#011#011#011RAISE 'my message'", "#011", "\t") == "\t\t\tRAISE 'my message'"
+then
+    set_field("has_xyz", contains("abcdef", "xyz"));
+    set_field("string_literal", "abcd\\.e\tfg\u03a9\363");
+    trigger_test();
+end

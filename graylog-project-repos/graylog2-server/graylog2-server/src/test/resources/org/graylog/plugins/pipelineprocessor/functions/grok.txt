@@ -1,0 +1,14 @@
+rule "grok"
+when true
+then
+    let matches = grok(pattern: "%{GREEDY:timestamp;date;yyyy-MM-dd'T'HH:mm:ss.SSSX}", value: "2015-07-31T10:05:36.773Z");
+    set_fields(matches);
+
+    // only named captures
+    let matches1 = grok("%{NUM:num}", "10", true);
+    set_fields(matches1);
+
+    //test for underscore
+    let matches2 = grok("%{UNDERSCORE}", "test", true);
+    set_fields(matches2);
+end

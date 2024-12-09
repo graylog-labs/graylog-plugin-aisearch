@@ -1,0 +1,110 @@
+/*
+ * Copyright (C) 2020 Graylog, Inc.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Server Side Public License, version 1,
+ * as published by MongoDB, Inc.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Server Side Public License for more details.
+ *
+ * You should have received a copy of the Server Side Public License
+ * along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
+ */
+package org.graylog.plugins.pipelineprocessor.rest;
+
+import com.google.common.base.Strings;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import jakarta.inject.Inject;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.graylog.plugins.pipelineprocessor.processors.ConfigurationStateUpdater;
+import org.graylog.plugins.pipelineprocessor.processors.PipelineInterpreter;
+import org.graylog.plugins.pipelineprocessor.simulator.PipelineInterpreterTracer;
+import org.graylog2.audit.jersey.NoAuditEvent;
+import org.graylog2.database.NotFoundException;
+import org.graylog2.plugin.Message;
+import org.graylog2.plugin.MessageFactory;
+import org.graylog2.plugin.rest.PluginRestResource;
+import org.graylog2.plugin.streams.Stream;
+import org.graylog2.rest.models.messages.responses.DecorationStats;
+import org.graylog2.rest.models.messages.responses.ResultMessageSummary;
+import org.graylog2.shared.rest.resources.RestResource;
+import org.graylog2.shared.security.RestPermissions;
+import org.graylog2.streams.StreamService;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.graylog2.shared.rest.documentation.generator.Generator.CLOUD_VISIBLE;
+
+@Api(value = "Pipelines/Simulator", description = "Simulate pipeline message processor", tags = {CLOUD_VISIBLE})
+@Path("/system/pipelines/simulate")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+@RequiresAuthentication
+public class SimulatorResource extends RestResource implements PluginRestResource {
+    private final ConfigurationStateUpdater pipelineStateUpdater;
+    private final StreamService streamService;
+    private final MessageFactory messageFactory;
+    private final PipelineInterpreter pipelineInterpreter;
+
+    @Inject
+    public SimulatorResource(PipelineInterpreter pipelineInterpreter,
+                             ConfigurationStateUpdater pipelineStateUpdater,
+                             StreamService streamService,
+                             MessageFactory messageFactory) {
+        this.pipelineInterpreter = pipelineInterpreter;
+        this.pipelineStateUpdater = pipelineStateUpdater;
+        this.streamService = streamService;
+        this.messageFactory = messageFactory;
+    }
+
+    @ApiOperation(value = "Simulate the execution of the pipeline message processor")
+    @POST
+    @RequiresPermissions(PipelineRestPermissions.PIPELINE_RULE_READ)
+    @NoAuditEvent("only used to test pipelines, no changes made in the system")
+    public SimulationResponse simulate(@ApiParam(name = "simulation", required = true) @NotNull SimulationRequest request) throws NotFoundException {
+        checkPermission(RestPermissions.STREAMS_READ, request.streamId());
+
+        final Message message = messageFactory.createMessage(request.message());
+        // Save off the original message fields to compare post pipeline processing
+        Map<String, Object> originalFields = new HashMap<>(message.getFields());
+        final Stream stream = streamService.load(request.streamId());
+        message.addStream(stream);
+
+        if (!Strings.isNullOrEmpty(request.inputId())) {
+            message.setSourceInputId(request.inputId());
+        }
+
+        final List<ResultMessageSummary> simulationResults = new ArrayList<>();
+        final PipelineInterpreterTracer pipelineInterpreterTracer = new PipelineInterpreterTracer();
+
+        org.graylog2.plugin.Messages processedMessages = pipelineInterpreter.process(message,
+                pipelineInterpreterTracer.getSimulatorInterpreterListener(),
+                pipelineStateUpdater.getLatestState());
+        for (Message processedMessage : processedMessages) {
+            ResultMessageSummary summary = ResultMessageSummary.create(null, processedMessage.getFields(), "");
+            // generate the DecorationStats and add it to the summary
+            DecorationStats decorationStats = DecorationStats.create(originalFields, processedMessage.getFields());
+            simulationResults.add(summary.toBuilder().decorationStats(decorationStats).build());
+        }
+
+        return SimulationResponse.create(simulationResults,
+                pipelineInterpreterTracer.getExecutionTrace(),
+                pipelineInterpreterTracer.took());
+    }
+}
