@@ -31,7 +31,7 @@
 
     <groupId>org.graylog</groupId>
     <artifactId>graylog-plugin-aisearch</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>6.1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>${project.artifactId}</name>
