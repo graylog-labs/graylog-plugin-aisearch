@@ -5,13 +5,17 @@ offers copy-and-paste commands that are specific to this plugin, to hopefully sa
 
 ## Configuring Project Directory
 
+Switch to the directory where you keep dev projects:
 ```bash
 cd $HOME/Projects
-git clone git@github.com:graylog-labs/graylog-plugin-aisearch.git
-(check out preferred branch)
 ```
 
-⚠️ When using Docker Desktop on Mac, configure `$HOME/Projects/graylog-plugin-aisearch` as a virtual file share in Settings|Resources|File sharing. (this isn't necessary on Windows)
+Clone the repo:
+```bash
+git clone git@github.com:graylog-labs/graylog-plugin-aisearch.git
+```
+
+⚠️ When using Docker Desktop on Mac, configure the `graylog-plugin-aisearch` directory as a virtual file share in Settings|Resources|File sharing. (this isn't necessary on Windows)
 
 
 ## Running Development Container
