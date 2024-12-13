@@ -46,9 +46,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:ai-search.git</connection>
-        <developerConnection>scm:git:git@github.com:ai-search.git</developerConnection>
-        <url>https://github.com/ai-search</url>
+        <connection>scm:git:git@github.com:grayloglabs/graylog-plugin-aisearch.git</connection>
+        <developerConnection>scm:git:git@github.com:grayloglabs/graylog-plugin-aisearch.git</developerConnection>
+        <url>https://github.com/grayloglabs/graylog-plugin-aisearch</url>
         <tag>HEAD</tag>
     </scm>
 

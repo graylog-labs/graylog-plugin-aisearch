@@ -47,7 +47,7 @@ public class AISearchMetaData implements PluginMetaData {
 
     @Override
     public URI getURL() {
-        return URI.create("https://github.com/ai-search");
+        return URI.create("https://github.com/grayloglabs/graylog-plugin-aisearch");
     }
 
     @Override
