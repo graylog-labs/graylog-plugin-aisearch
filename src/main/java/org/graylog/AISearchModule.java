@@ -18,6 +18,8 @@ package org.graylog;
 
 import org.graylog2.plugin.PluginConfigBean;
 import org.graylog2.plugin.PluginModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Set;
@@ -26,6 +28,8 @@ import java.util.Set;
  * Extend the PluginModule abstract class here to add you plugin to the system.
  */
 public class AISearchModule extends PluginModule {
+    private static final Logger LOG = LoggerFactory.getLogger(AISearchModule.class);
+
     /**
      * Returns all configuration beans required by this plugin.
      *
@@ -56,5 +60,6 @@ public class AISearchModule extends PluginModule {
          *
          * addConfigBeans();
          */
+        LOG.info("Hello from configure()");
     }
 }
