@@ -1,4 +1,4 @@
-# Contributing to ai-search
+# Contributing to graylog-plugin-aisearch
 
 Official (and somewhat generic) documentation on writing plugins is available at https://docs.graylog.org/docs/plugins. This guide
 offers copy-and-paste commands that are specific to this plugin, to hopefully save you time. 😀  
@@ -7,18 +7,18 @@ offers copy-and-paste commands that are specific to this plugin, to hopefully sa
 
 ```bash
 cd $HOME/Projects
-git clone git@github.com:graylog-labs/ai-search.git
+git clone git@github.com:graylog-labs/graylog-plugin-aisearch.git
 (check out preferred branch)
 ```
 
-⚠️ When using Docker Desktop on Mac, configure `$HOME/Projects/ai-search` as a virtual file share in Settings|Resources|File sharing. (this isn't necessary on Windows)
+⚠️ When using Docker Desktop on Mac, configure `$HOME/Projects/graylog-plugin-aisearch` as a virtual file share in Settings|Resources|File sharing. (this isn't necessary on Windows)
 
 
 ## Running Development Container
 
 Start devtanker with default settings and directory mounts:
 ```bash
-docker run -d --name devtanker -v $HOME/Projects/ai-search:/home/runtime/graylog-plugin-aisearch -v devtanker:/data -e GRAYLOG_DATANODE_INSECURE_STARTUP="true" -e GRAYLOG_DATANODE_PASSWORD_SECRET="somepasswordpeppersomepasswordpeppersomepasswordpeppersomepasswordpepper" -e GRAYLOG_HTTP_EXTERNAL_URI="http://localhost:9000/" -e GRAYLOG_PASSWORD_SECRET="somepasswordpeppersomepasswordpeppersomepasswordpeppersomepasswordpepper" -e GRAYLOG_ROOT_PASSWORD_SHA2="8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918" -e TZ=UTC -p 5044:5044/tcp -p 5140:5140/tcp -p 5140:5140/udp -p 9000:9000/tcp -p 12201:12201/tcp -p 12201:12201/udp -p 13301:13301/tcp -p 13302:13302/tcp robfromboulder/devtanker:6.1.4c
+docker run -d --name devtanker -v $HOME/Projects/graylog-plugin-aisearch:/home/runtime/graylog-plugin-aisearch -v devtanker:/data -e GRAYLOG_DATANODE_INSECURE_STARTUP="true" -e GRAYLOG_DATANODE_PASSWORD_SECRET="somepasswordpeppersomepasswordpeppersomepasswordpeppersomepasswordpepper" -e GRAYLOG_HTTP_EXTERNAL_URI="http://localhost:9000/" -e GRAYLOG_PASSWORD_SECRET="somepasswordpeppersomepasswordpeppersomepasswordpeppersomepasswordpepper" -e GRAYLOG_ROOT_PASSWORD_SHA2="8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918" -e TZ=UTC -p 5044:5044/tcp -p 5140:5140/tcp -p 5140:5140/udp -p 9000:9000/tcp -p 12201:12201/tcp -p 12201:12201/udp -p 13301:13301/tcp -p 13302:13302/tcp robfromboulder/devtanker:6.1.4c
 ```
 👆️ When using Docker Desktop on Windows, use PowerShell to launch `docker run` and **not** git bash shell. Also use Windows syntax (`-v C:\Users\Projects\...`) when mapping the directory. 
 
@@ -44,7 +44,7 @@ mvn archetype:generate -DarchetypeGroupId=org.graylog -DarchetypeArtifactId=gray
 ```
 👆 then provide the following parameters:
 * pluginClassName = AISearch
-* githubRepo = ai-search
+* githubRepo = grayloglabs/graylog-plugin-aisearch
 * ownerName = Graylog
 * ownerEmail = support@graylog.com
 * groupId = org.graylog
@@ -56,16 +56,7 @@ Update web-parent version to `6.1.4`:
 nano graylog-plugin-aisearch/pom.xml
 ```
 
-```bash
-BROKEN STEP -- add missing dependency to pom.xml as well
-
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>7.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-```
+⚠️ Have to add manual dependencies here, which isn't mentioned in docs
 
 ## Building Plugin
 
