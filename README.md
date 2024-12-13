@@ -8,7 +8,7 @@ CU Capstone 2024 project
 
 ## Installation
 
-[Download the plugin](https://github.com/grayloglabs/graylog-plugin-aisearch/releases)
+[Download the plugin](https://github.com/graylog-labs/graylog-plugin-aisearch/releases)
 and place the `.jar` file in your Graylog plugin directory. The plugin directory
 is the `plugins/` folder relative from your `graylog-server` directory by default
 and can be configured in your `graylog.conf` file.

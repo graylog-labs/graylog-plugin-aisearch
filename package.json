@@ -4,7 +4,7 @@
   "description": "",
   "repository": {
     "type": "git",
-    "url": "grayloglabs/graylog-plugin-aisearch"
+    "url": "graylog-labs/graylog-plugin-aisearch"
   },
   "scripts": {
     "build": "webpack",

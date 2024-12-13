@@ -44,7 +44,7 @@ mvn archetype:generate -DarchetypeGroupId=org.graylog -DarchetypeArtifactId=gray
 ```
 👆 then provide the following parameters:
 * pluginClassName = AISearch
-* githubRepo = grayloglabs/graylog-plugin-aisearch
+* githubRepo = graylog-labs/graylog-plugin-aisearch
 * ownerName = Graylog
 * ownerEmail = support@graylog.com
 * groupId = org.graylog
