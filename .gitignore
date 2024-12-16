@@ -9,6 +9,7 @@
 dependency-reduced-pom.xml
 pom.xml.releaseBackup
 pom.xml.versionsBackup
+yarn.lock
 
 # by extension
 *.iml
