@@ -14,7 +14,7 @@
  * along with this program. If not, see
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
-package org.graylog;
+package org.graylog.aisearch;
 
 import org.graylog2.plugin.PluginMetaData;
 import org.graylog2.plugin.ServerStatus;
@@ -32,7 +32,7 @@ public class AISearchMetaData implements PluginMetaData {
 
     @Override
     public String getUniqueId() {
-        return "org.graylog.AISearchPlugin";
+        return "org.graylog.aisearch.AISearchPlugin";
     }
 
     @Override

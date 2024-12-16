@@ -14,7 +14,7 @@
  * along with this program. If not, see
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
-package org.graylog;
+package org.graylog.aisearch;
 
 /**
  * This is the plugin. Your class should implement one of the existing plugin

@@ -3,6 +3,6 @@ const { PluginWebpackConfig } = require('graylog-web-plugin');
 const { loadBuildConfig } = require('graylog-web-plugin');
 
 // Remember to use the same name here and in `getUniqueId()` in the java MetaData class
-module.exports = new PluginWebpackConfig(__dirname, 'org.graylog.AISearchPlugin', loadBuildConfig(path.resolve(__dirname, './build.config')), {
+module.exports = new PluginWebpackConfig(__dirname, 'org.graylog.aisearch.AISearchPlugin', loadBuildConfig(path.resolve(__dirname, './build.config')), {
   // Here goes your additional webpack configuration.
 });

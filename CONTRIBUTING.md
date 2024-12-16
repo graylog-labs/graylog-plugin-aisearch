@@ -21,7 +21,7 @@ git clone git@github.com:graylog-labs/graylog-plugin-aisearch.git
 
 ## Running Development Container
 
-Start devtanker with default settings and directory mounts:
+Start devtanker with default settings and volume/directory mounts:
 ```bash
 docker run -d --name devtanker -v $HOME/Projects/graylog-plugin-aisearch:/home/runtime/graylog-project-repos/graylog-plugin-aisearch -v devtanker:/data -e GRAYLOG_DATANODE_INSECURE_STARTUP="true" -e GRAYLOG_DATANODE_PASSWORD_SECRET="somepasswordpeppersomepasswordpeppersomepasswordpeppersomepasswordpepper" -e GRAYLOG_HTTP_EXTERNAL_URI="http://localhost:9000/" -e GRAYLOG_PASSWORD_SECRET="somepasswordpeppersomepasswordpeppersomepasswordpeppersomepasswordpepper" -e GRAYLOG_ROOT_PASSWORD_SHA2="8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918" -e TZ=UTC -p 5044:5044/tcp -p 5140:5140/tcp -p 5140:5140/udp -p 9000:9000/tcp -p 12201:12201/tcp -p 12201:12201/udp -p 13301:13301/tcp -p 13302:13302/tcp robfromboulder/devtanker:6.1.4c
 ```
@@ -46,20 +46,12 @@ cd ~/graylog-project && mvn compile
 
 ## Generating Plugin Skeleton
 
-⚠️ Skip this entire section unless initializing a new branch from scratch
+⚠️ Skip this entire section unless initializing a new branch from scratch or planning to re-merge changes against generated files.
 
-Generate plugin scaffolding:
+Generate plugin scaffolding with default params:
 ```bash
-cd ~/graylog-project-repos && mvn archetype:generate -DarchetypeGroupId=org.graylog -DarchetypeArtifactId=graylog-plugin-archetype
+cd ~/graylog-project-repos/graylog-plugin-aisearch && rm -rf .mvn/jvm.config build.config.js package.json pom.xml src webpack.config.js && cd ~/graylog-project-repos && mvn archetype:generate -DarchetypeGroupId=org.graylog -DarchetypeArtifactId=graylog-plugin-archetype -DpluginClassName=AISearch -DgithubRepo=graylog-labs/graylog-plugin-aisearch -DownerName=Graylog -DownerEmail=support@graylog.com -DgroupId=org.graylog -DartifactId=graylog-plugin-aisearch -Dpackage=org.graylog.aisearch -Dversion=6.1.0-SNAPSHOT
 ```
-👆 then provide the following parameters:
-* pluginClassName = AISearch
-* githubRepo = graylog-labs/graylog-plugin-aisearch
-* ownerName = Graylog
-* ownerEmail = support@graylog.com
-* groupId = org.graylog
-* artifactId = graylog-plugin-aisearch
-* package = org.graylog.graylog-plugin-aisearch
 
 Update web-parent version to `6.1.4`:
 ```bash
