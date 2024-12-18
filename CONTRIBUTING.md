@@ -3,94 +3,97 @@
 Official (and somewhat generic) documentation on writing plugins is available at https://docs.graylog.org/docs/plugins. This guide
 offers copy-and-paste commands that are specific to this plugin, to hopefully save you time. 😀  
 
+⚠️ Don't clone this repo before following this guide. The build relies on relative paths, so it's critical that your
+directory structure is correct. Follow the steps below and you'll be up and running in about 15 minutes.
 
-## Configuring Project Directory
+🛟 If this guide doesn't work for you, please [log an issue](https://github.com/graylog-labs/graylog-plugin-aisearch/issues).
 
-Switch to the directory where you keep dev projects:
+## Configuring Development Environment
+
+1. Add [tugboat](https://github.com/robfromboulder/tugboat) alias to your bash shell:
+
 ```bash
-cd $HOME/Projects
+alias tugboat='docker run -v $(pwd):/root/work -v $HOME/.m2:/root/.m2 --rm -it robfromboulder/tugboat:6.1.0a'
 ```
 
-Clone the repo:
+2. Switch to the directory where you'll keep Graylog development projects:
 ```bash
-git clone git@github.com:graylog-labs/graylog-plugin-aisearch.git
+cd $HOME/Projects/graylog2
+```
+👆 This is the working directory where you'll run all the commands in this guide. Multiple subdirectories will be created here for you.
+
+3.️ When using Docker Desktop on Mac, configure `$HOME/Projects/graylog2` and `$HOME/.m2` shared directories as shown here:
+<img src="virtual-file-shares-on-mac.png" width="50%">
+
+4. Bootstrap Graylog development projects:
+```bash
+tugboat graylog-project bootstrap https://github.com/Graylog2/graylog-project.git --manifest manifests/6.1.json
 ```
 
-⚠️ When using Docker Desktop on Mac, configure your `graylog-plugin-aisearch` directory as a virtual file share in Settings|Resources|File sharing.
-
-
-## Running Development Container
-
-Start devtanker with default settings and volume/directory mounts:
+5. Compile Graylog server: (this takes a few minutes so be patient)
 ```bash
-docker run -d --name devtanker -v $HOME/Projects/graylog-plugin-aisearch:/home/runtime/graylog-project-repos/graylog-plugin-aisearch -v devtanker:/data -e GRAYLOG_DATANODE_INSECURE_STARTUP="true" -e GRAYLOG_DATANODE_PASSWORD_SECRET="somepasswordpeppersomepasswordpeppersomepasswordpeppersomepasswordpepper" -e GRAYLOG_HTTP_EXTERNAL_URI="http://localhost:9000/" -e GRAYLOG_PASSWORD_SECRET="somepasswordpeppersomepasswordpeppersomepasswordpeppersomepasswordpepper" -e GRAYLOG_ROOT_PASSWORD_SHA2="8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918" -e TZ=UTC -p 5044:5044/tcp -p 5140:5140/tcp -p 5140:5140/udp -p 9000:9000/tcp -p 12201:12201/tcp -p 12201:12201/udp -p 13301:13301/tcp -p 13302:13302/tcp robfromboulder/devtanker:6.1.4c
-```
-👆️ When using Docker Desktop on Windows, use PowerShell to launch `docker run` and **not** git bash shell. Also use Windows syntax (`-v C:\Users\Projects\...`) when mapping the directory. 
-
-Start bash shell:
-```bash
-docker exec -it devtanker bash
+tugboat mvn -f graylog-project/pom.xml compile
 ```
 
-👀 Run `ll graylog-project-repos` and verify `graylog-plugin-aisearch` is present as a subdirectory.
-If this directory is missing, then stop the container and double-check that your directory mount syntax is correct.
-If this directory is present and owned by root (instead of the runtime user), then fix by reconnecting as root
-(`docker exec --user root -it devtanker bash`), changing the directory owner (`chown -R runtime:runtime ~`),
-and then restarting the bash shell as shown above.
-
-Finish by compiling Graylog Server, which takes a few minutes:
+6. Clone the plugin repo from GitHub:
 ```bash
-cd ~/graylog-project && mvn compile
+git clone git@github.com:graylog-labs/graylog-plugin-aisearch.git graylog-project-repos/graylog-plugin-aisearch
 ```
 
+## Using IDEA
 
-## Generating Plugin Skeleton
+IDEA isn't required to contribute to this project -- but if you use IDEA, you'll enjoy all the benefits 🔥 
 
-⚠️ Skip this entire section unless initializing a new branch from scratch or planning to re-merge changes against generated files.
+1. Open the meta project in `$HOME/Projects/graylog2/graylog-project/pom.xml`
+2. Add `graylog-plugin-aisearch` to pom.xml
+3. (further configuration???)
 
-Generate plugin scaffolding with default params:
+## Building and Testing Plugin
+
+1. Build plugin using Maven:
 ```bash
-cd ~/graylog-project-repos/graylog-plugin-aisearch && rm -rf .mvn/jvm.config build.config.js package.json pom.xml src webpack.config.js && cd ~/graylog-project-repos && mvn archetype:generate -DarchetypeGroupId=org.graylog -DarchetypeArtifactId=graylog-plugin-archetype -DpluginClassName=AISearch -DgithubRepo=graylog-labs/graylog-plugin-aisearch -DownerName=Graylog -DownerEmail=support@graylog.com -DgroupId=org.graylog -DartifactId=graylog-plugin-aisearch -Dpackage=org.graylog.aisearch -Dversion=6.1.0-SNAPSHOT
+tugboat mvn -f graylog-project-repos/graylog-plugin-aisearch/pom.xml -Dmaven.javadoc.skip=true -DskipTests compile package
 ```
 
-Update web-parent version to `6.1.4`:
+2. Run [supertanker](https://github.com/robfromboulder/supertanker) using latest plugin jar:
 ```bash
-nano ~/graylog-project-repos/graylog-plugin-aisearch/pom.xml
+docker run -d --name supertanker -v ./graylog-project-repos/graylog-plugin-aisearch/target:/home/plugin -v supertanker:/data -e GRAYLOG_DATANODE_INSECURE_STARTUP="true" -e GRAYLOG_DATANODE_PASSWORD_SECRET="somepasswordpeppersomepasswordpeppersomepasswordpeppersomepasswordpepper" -e GRAYLOG_HTTP_EXTERNAL_URI="http://localhost:9000/" -e GRAYLOG_PASSWORD_SECRET="somepasswordpeppersomepasswordpeppersomepasswordpeppersomepasswordpepper" -e GRAYLOG_ROOT_PASSWORD_SHA2="8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918" -e TZ=UTC -p 5044:5044/tcp -p 5140:5140/tcp -p 5140:5140/udp -p 9000:9000/tcp -p 12201:12201/tcp -p 12201:12201/udp -p 13301:13301/tcp -p 13302:13302/tcp robfromboulder/supertanker:6.1.4c
 ```
 
-
-## Building and Deploying Plugin
-
-Build plugin using Maven:
+3. Start bash shell on supertanker:
 ```bash
-cd ~/graylog-project-repos/graylog-plugin-aisearch && mvn -Dmaven.javadoc.skip=true -DskipTests clean compile package
+docker exec -it supertanker bash
 ```
 
-Copy plugin to local Graylog server and restart:
+4. Show plugin messages in logs:
 ```bash
-cp ~/graylog-project-repos/graylog-plugin-aisearch/target/graylog-plugin-aisearch*.jar $GRAYLOG_PLUGIN_DIR; supervisorctl restart graylog
+cat graylog-stdout* | grep -i aisearch
 ```
 
-Find plugin messages in logs:
-```bash
-cat $LOGS_DIR/graylog-stdout* | grep -i aisearch
-```
-
-
-## Stopping Development Container
-
-Quit the bash shell:
+5. Quit the bash shell:
 ```bash
 exit
 ```
 
-Stop container but keep all data:
+6. Stop supertanker and remove all data:
 ```bash
-docker stop devtanker
+docker stop supertanker; docker rm supertanker; docker volume rm supertanker
 ```
-👆 Use `docker start devtanker` when you're ready to resume.
 
-Stop container and remove all data:
+## Generating Plugin Skeleton
+
+1. Generate plugin scaffolding with default params:
 ```bash
-docker stop devtanker; docker rm devtanker; docker volume rm devtanker
+cd graylog-project-repos/graylog-plugin-aisearch
+rm -rf .mvn/jvm.config build.config.js package.json pom.xml src webpack.config.js
+cd ..
+mvn archetype:generate -DarchetypeGroupId=org.graylog -DarchetypeArtifactId=graylog-plugin-archetype -DpluginClassName=AISearch -DgithubRepo=graylog-labs/graylog-plugin-aisearch -DownerName=Graylog -DownerEmail=support@graylog.com -DgroupId=org.graylog -DartifactId=graylog-plugin-aisearch -Dpackage=org.graylog.aisearch -Dversion=6.1.0-SNAPSHOT
+cd ..
 ```
+
+2. Update web-parent version to `6.1.4`:
+```bash
+nano graylog-project-repos/graylog-plugin-aisearch/pom.xml
+```
+
+3. Diff generated files against prior version (if present) and re-apply changes as necessary.
