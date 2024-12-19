@@ -1,29 +1,30 @@
 # Contributing to graylog-plugin-aisearch
 
 Official (and somewhat generic) documentation on writing plugins is available at https://docs.graylog.org/docs/plugins. This guide
-offers copy-and-paste commands that are specific to this plugin, to hopefully save you time. 😀  
+offers copy-and-paste commands that are specific to this plugin, to hopefully save you time. 😀
 
 ⚠️ Don't clone this repo before following this guide. The build relies on relative paths, so it's critical that your
-directory structure is correct. Follow the steps below and you'll be up and running in about 15 minutes.
+directory structure is correct. Follow the steps below and you'll be up and running in 15 minutes or less.
 
 🛟 If this guide doesn't work for you, please [log an issue](https://github.com/graylog-labs/graylog-plugin-aisearch/issues).
 
 ## Configuring Development Environment
 
-1. Add [tugboat](https://github.com/robfromboulder/tugboat) alias to your bash shell:
-
+1. Create a `graylog2` directory where you'll keep Graylog development projects:
 ```bash
-alias tugboat='docker run -v $(pwd):/root/work -v $HOME/.m2:/root/.m2 --rm -it robfromboulder/tugboat:6.1.0a'
+mkdir ~/Projects/graylog2
+cd ~/Projects/graylog2
 ```
+👆 This is the working directory where you'll run all the shell commands in this guide. Multiple subdirectories will be created here for you.
 
-2. Switch to the directory where you'll keep Graylog development projects:
+2.️ When using Docker Desktop on Mac, configure `~/Projects` and `~/.m2` shared directories as shown here:
+<p><img src="virtual-file-shares-on-mac.png" width="50%"></p>
+
+3. Add [tugboat](https://github.com/robfromboulder/tugboat) alias to your bash/zsh shell:
 ```bash
-cd $HOME/Projects/graylog2
+alias tugboat='docker run -v $(pwd):/root/work -v ~/.m2:/root/.m2 --rm -it robfromboulder/tugboat:6.1.0a'
 ```
-👆 This is the working directory where you'll run all the commands in this guide. Multiple subdirectories will be created here for you.
-
-3.️ When using Docker Desktop on Mac, configure `$HOME/Projects/graylog2` and `$HOME/.m2` shared directories as shown here:
-<img src="virtual-file-shares-on-mac.png" width="50%">
+👆 Add this to `~/.bashrc` or `~/.zshrc` if you use tugboat frequently.
 
 4. Bootstrap Graylog development projects:
 ```bash
@@ -39,14 +40,6 @@ tugboat mvn -f graylog-project/pom.xml compile
 ```bash
 git clone git@github.com:graylog-labs/graylog-plugin-aisearch.git graylog-project-repos/graylog-plugin-aisearch
 ```
-
-## Using IDEA
-
-IDEA isn't required to contribute to this project -- but if you use IDEA, you'll enjoy all the benefits 🔥 
-
-1. Open the meta project in `$HOME/Projects/graylog2/graylog-project/pom.xml`
-2. Add `graylog-plugin-aisearch` to pom.xml
-3. (further configuration???)
 
 ## Building and Testing Plugin
 
@@ -84,16 +77,16 @@ docker stop supertanker; docker rm supertanker; docker volume rm supertanker
 
 1. Generate plugin scaffolding with default params:
 ```bash
-cd graylog-project-repos/graylog-plugin-aisearch
-rm -rf .mvn/jvm.config build.config.js package.json pom.xml src webpack.config.js
-cd ..
-mvn archetype:generate -DarchetypeGroupId=org.graylog -DarchetypeArtifactId=graylog-plugin-archetype -DpluginClassName=AISearch -DgithubRepo=graylog-labs/graylog-plugin-aisearch -DownerName=Graylog -DownerEmail=support@graylog.com -DgroupId=org.graylog -DartifactId=graylog-plugin-aisearch -Dpackage=org.graylog.aisearch -Dversion=6.1.0-SNAPSHOT
-cd ..
+cd graylog-project-repos/graylog-plugin-aisearch && rm -rf .mvn/jvm.config build.config.js package.json pom.xml src webpack.config.js && cd .. && tugboat mvn archetype:generate -DarchetypeGroupId=org.graylog -DarchetypeArtifactId=graylog-plugin-archetype -DpluginClassName=AISearch -DgithubRepo=graylog-labs/graylog-plugin-aisearch -DownerName=Graylog -DownerEmail=support@graylog.com -DgroupId=org.graylog -DartifactId=graylog-plugin-aisearch -Dpackage=org.graylog.aisearch -Dversion=6.1.0-SNAPSHOT && cd ..
 ```
+2. Run `nano graylog-project-repos/graylog-plugin-aisearch/pom.xml` and update web-parent version to `6.1.4`
+3. At this point the build will fail unless `com.google.inject` dependency is added manually in pom.xml (#1) 🤔
+4. Diff generated files against prior version (if present) and re-apply changes as necessary
 
-2. Update web-parent version to `6.1.4`:
-```bash
-nano graylog-project-repos/graylog-plugin-aisearch/pom.xml
-```
+## Using IDEA
 
-3. Diff generated files against prior version (if present) and re-apply changes as necessary.
+IDEA isn't required to contribute to this project -- but if you use IDEA, you'll enjoy all the benefits 🔥
+
+1. Open the meta project in `~/Projects/graylog2/graylog-project/pom.xml`
+2. Add `graylog-plugin-aisearch` to pom.xml
+3. Seeing lots of files reported as changed (#2) 🤔
