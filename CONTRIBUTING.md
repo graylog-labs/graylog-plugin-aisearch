@@ -53,22 +53,12 @@ tugboat mvn -f graylog-project-repos/graylog-plugin-aisearch/pom.xml -Dmaven.jav
 docker run -d --name supertanker -v ./graylog-project-repos/graylog-plugin-aisearch/target:/home/plugin -v supertanker:/data -e GRAYLOG_DATANODE_INSECURE_STARTUP="true" -e GRAYLOG_DATANODE_PASSWORD_SECRET="somepasswordpeppersomepasswordpeppersomepasswordpeppersomepasswordpepper" -e GRAYLOG_HTTP_EXTERNAL_URI="http://localhost:9000/" -e GRAYLOG_PASSWORD_SECRET="somepasswordpeppersomepasswordpeppersomepasswordpeppersomepasswordpepper" -e GRAYLOG_ROOT_PASSWORD_SHA2="8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918" -e TZ=UTC -p 5044:5044/tcp -p 5140:5140/tcp -p 5140:5140/udp -p 9000:9000/tcp -p 12201:12201/tcp -p 12201:12201/udp -p 13301:13301/tcp -p 13302:13302/tcp robfromboulder/supertanker:6.1.4c
 ```
 
-3. Start bash shell on supertanker:
+3. Show plugin messages in logs:
 ```bash
-docker exec -it supertanker bash
+docker exec -it supertanker bash -c "cat graylog-stdout* | grep -i aisearch"
 ```
 
-4. Show plugin messages in logs:
-```bash
-cat graylog-stdout* | grep -i aisearch
-```
-
-5. Quit the bash shell:
-```bash
-exit
-```
-
-6. Stop supertanker and remove all data:
+4. Stop supertanker and remove all data:
 ```bash
 docker stop supertanker; docker rm supertanker; docker volume rm supertanker
 ```
