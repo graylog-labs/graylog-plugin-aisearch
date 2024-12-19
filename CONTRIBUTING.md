@@ -41,6 +41,14 @@ tugboat mvn -f graylog-project/pom.xml compile
 git clone git@github.com:graylog-labs/graylog-plugin-aisearch.git graylog-project-repos/graylog-plugin-aisearch
 ```
 
+## Configuring IDEA
+
+IDEA isn't required to contribute to this project -- but if you use IDEA, you'll enjoy all the benefits 🔥
+
+1. Open the meta project in `~/Projects/graylog2/graylog-project/pom.xml`
+2. Add `graylog-plugin-aisearch` to pom.xml
+3. Seeing lots of files reported as changed [#2](https://github.com/graylog-labs/graylog-plugin-aisearch/issues/2) 🤔
+
 ## Building and Testing Plugin
 
 1. Build plugin using Maven:
@@ -72,11 +80,3 @@ cd graylog-project-repos/graylog-plugin-aisearch && rm -rf .mvn/jvm.config build
 2. Run `nano graylog-project-repos/graylog-plugin-aisearch/pom.xml` and update web-parent version to `6.1.4`
 3. At this point the build will fail unless `com.google.inject` dependency is added manually in pom.xml [#1](https://github.com/graylog-labs/graylog-plugin-aisearch/issues/1) 🤔
 4. Diff generated files against prior version (if present) and re-apply changes as necessary
-
-## Using IDEA
-
-IDEA isn't required to contribute to this project -- but if you use IDEA, you'll enjoy all the benefits 🔥
-
-1. Open the meta project in `~/Projects/graylog2/graylog-project/pom.xml`
-2. Add `graylog-plugin-aisearch` to pom.xml
-3. Seeing lots of files reported as changed [#2](https://github.com/graylog-labs/graylog-plugin-aisearch/issues/2) 🤔
