@@ -1,26 +1,22 @@
 import 'webpack-entry';
 
 import { PluginManifest, PluginStore } from 'graylog-web-plugin/plugin';
-
 import packageJson from '../../package.json';
+import SamplePage from './pages/SamplePage'; // Adjusted import path
 
 const manifest = new PluginManifest(packageJson, {
-  /* This is the place where you define which entities you are providing to the web interface.
-     Right now you can add routes and navigation elements to it.
-
-     Examples: */
-
-  // Adding a route to /sample, rendering YourReactComponent when called:
-
-  // routes: [
-  //  { path: '/sample', component: YourReactComponent, permissions: 'inputs:create' },
-  // ],
-
-  // Adding an element to the top navigation pointing to /sample named "Sample":
-
-  // navigation: [
-  //  { path: '/sample', description: 'Sample' },
-  // ]
+  routes: [
+    {
+      path: '/sample-page', // Define the URL for your page
+      component: SamplePage, // Reference your SamplePage component
+    },
+  ],
+  navigation: [
+    {
+      path: '/sample-page', // Add a link to this path in the navigation
+      description: 'Sample Page', // Label for the navigation link
+    },
+  ],
 });
 
 PluginStore.register(manifest);

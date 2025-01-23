@@ -60,6 +60,7 @@ public class AISearchModule extends PluginModule {
          *
          * addConfigBeans();
          */
-        LOG.info("Hello from configure()");
+        LOG.info("Hello from configure() - personal twist - Manas Gupta");
+        LOG.info("Hello from configure() - personal twist - Manas Gupta #2");
     }
 }
