@@ -10,45 +10,28 @@ const SamplePage = () => {
     setLoading(true);
     setError(null);
 
-    const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
-
-    // Define hardcoded parameters for OpenAI API
-    const requestBody = {
-      model: 'gpt-4', // Specify the OpenAI model to use
-      messages: [
-        { role: 'system', content: 'You are a helpful assistant.' },
-        { role: 'user', content: 'Write a poem about the sea.' }, // Replace with your desired input
-      ],
-      temperature: 0.7, // Controls the randomness of the output (0.7 is moderately random)
-      max_tokens: 150, // Limits the length of the response
-      top_p: 1.0, // Controls diversity via nucleus sampling
-      frequency_penalty: 0.0, // Penalizes repeated phrases
-      presence_penalty: 0.0, // Encourages discussion of new topics
-    };
-
     try {
-      const response = await fetch(apiEndpoint, {
-        method: 'POST',
+      const response = await fetch('http://localhost:9000/api/plugins/org.graylog.aisearch/aisearch/fetch-logs', {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify(requestBody), // Send the hardcoded request body
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error.message || 'Failed to fetch AI response');
+        throw new Error('Failed to fetch AI logs from the backend');
       }
 
-      const data = await response.json();
-      setResponse(data.choices[0].message.content.trim()); // Extract AI response
+      const data = await response.json(); // Assuming JSON response
+      setResponse(data); // Update the state with the backend response
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+
+
 
   return (
     <div style={{ padding: '20px' }}>
