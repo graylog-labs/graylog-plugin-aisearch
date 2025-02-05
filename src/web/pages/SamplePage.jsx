@@ -5,33 +5,36 @@ const SamplePage = () => {
   const [loading, setLoading] = useState(false); // Loading state
   const [error, setError] = useState(null); // Error state
 
-  // Function to handle API request
   const fetchAIResponse = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:9000/api/plugins/org.graylog.aisearch/aisearch/fetch-logs', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const res = await fetch(
+        'http://localhost:9000/api/plugins/org.graylog.aisearch/aisearch/fetch-logs',
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch AI logs from the backend');
+      if (!res.ok) {
+        const errorDetails = await res.json();
+        throw new Error(errorDetails.message || 'Failed to fetch AI response');
       }
 
-      const data = await response.json(); // Assuming JSON response
-      setResponse(data); // Update the state with the backend response
+      const data = await res.json();
+      const aiContent =
+        data?.choices?.[0]?.message?.content || 'No response content available.';
+      setResponse(aiContent);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
-
-
 
   return (
     <div style={{ padding: '20px' }}>
@@ -39,16 +42,54 @@ const SamplePage = () => {
       <p>Click the button below to get AI-generated insights.</p>
 
       <div style={{ marginBottom: '10px' }}>
-        <button onClick={fetchAIResponse} disabled={loading}>
+        <button
+          onClick={fetchAIResponse}
+          disabled={loading}
+          style={{
+            backgroundColor: '#0073e6',
+            color: 'white',
+            border: 'none',
+            padding: '10px 20px',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            opacity: loading ? 0.6 : 1,
+          }}
+        >
           {loading ? 'Loading...' : 'Fetch AI Response'}
         </button>
       </div>
 
-      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+      {loading && (
+        <div style={{ marginTop: '10px', color: '#0073e6' }}>
+          Fetching AI response, please wait...
+        </div>
+      )}
+
+      {error && (
+        <div style={{ color: 'red', marginTop: '10px' }}>
+          <strong>Error:</strong> {error}
+        </div>
+      )}
+
       {response && (
-        <div style={{ marginTop: '20px', padding: '10px', border: '1px solid #ddd', backgroundColor: '#f9f9f9' }}>
+        <div
+          style={{
+            marginTop: '20px',
+            padding: '10px',
+            border: '1px solid #ddd',
+            borderRadius: '5px',
+            whiteSpace: 'pre-wrap',
+            wordWrap: 'break-word',
+          }}
+        >
           <h3>AI's Response:</h3>
           <p>{response}</p>
+        </div>
+      )}
+
+      {!response && !error && !loading && (
+        <div style={{ marginTop: '10px', color: '#888' }}>
+          No AI response yet. Click the button to fetch insights.
         </div>
       )}
     </div>

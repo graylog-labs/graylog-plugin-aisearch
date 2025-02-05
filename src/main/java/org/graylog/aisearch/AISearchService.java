@@ -16,7 +16,7 @@ public class AISearchService {
     private static final Logger LOG = LoggerFactory.getLogger(AISearchService.class);
 
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-    private static final String API_KEY = "API KET HERE"; // Replace with your actual OpenAI API key
+    private static final String API_KEY = "API KEY HERE"; // Replace with your actual OpenAI API key
 
     public String fetchLogsFromGraylog() {
         // Placeholder: Logic to fetch logs from Graylog (mock data for now)
