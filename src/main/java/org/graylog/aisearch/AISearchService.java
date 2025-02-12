@@ -13,16 +13,43 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Base64;
 import java.util.Scanner;
 
 public class AISearchService {
     private static final Logger LOG = LoggerFactory.getLogger(AISearchService.class);
 
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-    private static final String API_KEY = "API KEY HERE"; // Replace with your actual OpenAI API key
+    private static final String API_KEY = "API_KEY_HERE"; // Replace with your actual OpenAI API key
     private static final Path LOG_FILE_PATH = Paths.get("/logs/OpenSSH_2k_LF.log"); // Update with your desired log file
 
+    /**
+     * Constructor: Kick off a background thread that waits 90s,
+     * then calls fetchLogsFromGraylog().
+     */
+    public AISearchService() {
+        new Thread(() -> {
+            try {
+                // Wait 90 seconds so Graylog can finish starting
+                Thread.sleep(120000);
+            } catch (InterruptedException ignored) {
+            }
+
+            // Now that we've (hopefully) given Graylog time to come up, do the fetch
+            String response = fetchLogsFromGraylog();
+            LOG.info("First attempt to fetch logs after delay: {}", response);
+        }).start();
+    }
+
+    /**
+     * Main high-level method that:
+     *  1) Calls fetchLogsFromGraylogAPI()
+     *  2) Reads the logs from /logs/OpenSSH_2k_LF.log
+     *  3) Calls OpenAI API with the log content
+     */
     public String fetchLogsFromGraylog() {
+        fetchLogsFromGraylogAPI();
+
         // Read the log data from the file
         String graylogData = readLogFile(String.valueOf(LOG_FILE_PATH));
 
@@ -55,6 +82,50 @@ public class AISearchService {
         }
     }
 
+    /**
+     * Fetch logs from the Graylog API (Equivalent to cURL request)
+     */
+    public String fetchLogsFromGraylogAPI() {
+        try {
+            String graylogApiUrl = "http://localhost:9000/api/search/messages?fields=timestamp,source,message&size=10";
+
+            URL url = new URL(graylogApiUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Set headers
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("X-Requested-By", "cli");
+
+            // Basic Auth
+            String encodedAuth = Base64.getEncoder()
+                    .encodeToString(("admin:admin").getBytes(StandardCharsets.UTF_8));
+            connection.setRequestProperty("Authorization", "Basic " + encodedAuth);
+
+            // Get Response Code
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                // Read response
+                try (BufferedReader br = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        response.append(line);
+                    }
+                    LOG.info("Graylog API Response: {}", response);
+                    return response.toString();
+                }
+            } else {
+                LOG.error("Failed to fetch logs from Graylog API. Response Code: {}", responseCode);
+                return "Error: Failed to fetch logs.";
+            }
+        } catch (Exception e) {
+            LOG.error("Error fetching logs from Graylog API: {}", e.getMessage(), e);
+            return "Error: " + e.getMessage();
+        }
+    }
+
     private String callOpenAI(String input) {
         try {
             // Set up the OpenAI API connection
@@ -64,8 +135,9 @@ public class AISearchService {
             connection.setRequestProperty("Authorization", "Bearer " + API_KEY);
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setDoOutput(true);
-            input = input.replace("\n", "    ");
 
+            // Replace newlines with spaces to avoid JSON parse issues
+            input = input.replace("\n", "    ");
 
             // Prepare the request payload
             String payload = """
@@ -83,8 +155,6 @@ public class AISearchService {
             }
             """.formatted(input);
 
-
-
             // Send the request
             try (OutputStream os = connection.getOutputStream()) {
                 os.write(payload.getBytes(StandardCharsets.UTF_8));
@@ -93,7 +163,6 @@ public class AISearchService {
 
             // Handle the response
             int responseCode = connection.getResponseCode();
-
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 try (BufferedReader br = new BufferedReader(
                         new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
@@ -115,7 +184,7 @@ public class AISearchService {
                         errorResponse.append(line);
                     }
                     LOG.error("Failed to fetch from OpenAI API. Response Code: {}", responseCode);
-                    LOG.error("OpenAI API Response Body: {}", errorResponse.toString());
+                    LOG.error("OpenAI API Response Body: {}", errorResponse);
                 } catch (IOException e) {
                     LOG.error("Failed to read OpenAI API error response: {}", e.getMessage(), e);
                 }
