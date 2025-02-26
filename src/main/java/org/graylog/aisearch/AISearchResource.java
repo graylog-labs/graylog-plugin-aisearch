@@ -25,7 +25,8 @@ public class AISearchResource implements PluginRestResource {
     @GET
     @Path("/fetch-logs")
     public String fetchLogs() {
-        return aiSearchService.fetchLogsFromGraylog();
+        //return aiSearchService.fetchLogsFromGraylog();
+        return aiSearchService.doFetchLogic();
     }
 }
 
