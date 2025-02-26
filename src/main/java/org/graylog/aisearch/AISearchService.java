@@ -204,6 +204,8 @@ public class AISearchService {
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setDoOutput(true);
 
+            LOG.info("input: {}", input);
+
             // Replace newlines with spaces to avoid JSON parse issues
             input = input.replace("\n", "    ");
 

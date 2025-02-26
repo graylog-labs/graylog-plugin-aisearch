@@ -63,13 +63,12 @@ public class AISearchModule extends PluginModule {
         bind(AISearchService.class).asEagerSingleton();
         addRestResource(AISearchResource.class); // Register the REST endpoint
 
-        bind(AISearchService.class).asEagerSingleton();
+
         LOG.info("Hello from configure() - personal twist - Manas Gupta");
         LOG.info("Hello from configure() - personal twist - Manas Gupta #2");
 
-        LOG.info("Configuring AISearchModule");
-        AISearchService aiSearchService = new AISearchService();
-        aiSearchService.fetchLogsFromGraylog(); // Logs Graylog data analyzed by OpenAI
+
+
 
 
 
