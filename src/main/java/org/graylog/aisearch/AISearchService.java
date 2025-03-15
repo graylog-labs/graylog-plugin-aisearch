@@ -27,61 +27,11 @@ public class AISearchService {
 
     private static final Path LOG_FILE_PATH = Paths.get("/logs/OpenSSH_2k_LF.log"); // Your "test logs"
 
-    /**
-     * Constructor: Spin up a background thread that either:
-     * (A) If USE_TEST_LOGS == true, skip Graylog entirely and read from LOG_FILE_PATH.
-     * (B) Otherwise, keep retrying until Graylog is up, then call fetchLogsFromGraylog().
-     */
+    //Cache Open AI Response
+    String finalResponse = "Initial Render";
+
     public AISearchService() {
-        /*new Thread(() -> {
-            if (USE_TEST_LOGS) {
-                // 2) If USE_TEST_LOGS == true, skip Graylog checks. Just read file & call OpenAI.
-                LOG.info("USE_TEST_LOGS == true, skipping Graylog. Reading file-based logs only...");
 
-                // Read the test logs from the file
-                String fileLogs = readLogFile(LOG_FILE_PATH.toString());
-
-                // Log each line
-                try (Scanner scanner = new Scanner(fileLogs)) {
-                    while (scanner.hasNextLine()) {
-                        String line = scanner.nextLine();
-                        LOG.info("Test log line: {}", line);
-                    }
-                }
-
-                // Send them to OpenAI
-                String openAiResponse = callOpenAI(fileLogs);
-                LOG.info("Test logs -> OpenAI response: {}", openAiResponse);
-
-            } else {
-                // 3) Original logic: keep retrying until Graylog is up, then fetch logs.
-                int maxRetries = 10000;  // Adjust as needed
-                int retryDelayMs = 1000; // Wait 1 second between attempts
-                boolean graylogIsUp = false;
-
-                for (int attempt = 1; attempt <= maxRetries; attempt++) {
-                    if (isGraylogUp()) {
-                        LOG.info("Graylog is reachable on attempt #{}, calling fetchLogsFromGraylog...", attempt);
-                        String response = fetchLogsFromGraylog();
-                        LOG.info("First attempt to fetch logs after Graylog responded OK: {}", response);
-                        graylogIsUp = true;
-                        break;
-                    } else {
-                        LOG.warn("Graylog not reachable on attempt #{}. Will retry in {} ms...", attempt, retryDelayMs);
-                        try {
-                            Thread.sleep(retryDelayMs);
-                        } catch (InterruptedException ignored) {
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
-                    }
-                }
-
-                if (!graylogIsUp) {
-                    LOG.error("Exceeded max retries ({}). Graylog still not reachable. Not calling fetchLogsFromGraylog().", maxRetries);
-                }
-            }
-        }).start();*/
     }
 
     public String doFetchLogic() {
@@ -93,32 +43,6 @@ public class AISearchService {
         }
     }
 
-
-
-    /**
-     * Quick check to see if Graylog is listening at http://localhost:9000.
-     * If we get a 200 (OK) from a HEAD request, assume Graylog is up.
-     */
-    private boolean isGraylogUp() {
-        HttpURLConnection connection = null;
-        try {
-            URL url = new URL("http://localhost:9000");
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("HEAD");
-            connection.setConnectTimeout(2000);
-            connection.setReadTimeout(2000);
-
-            int responseCode = connection.getResponseCode();
-            return (responseCode == HttpURLConnection.HTTP_OK);
-        } catch (IOException e) {
-            // If we hit an IOException, it's not up yet
-            return false;
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-    }
 
     /**
      * Main high-level method that:
@@ -194,6 +118,10 @@ public class AISearchService {
         }
     }
 
+    public String returnResponse (){
+        return finalResponse;
+    }
+
     private String callOpenAI(String input) {
         try {
             // Set up the OpenAI API connection
@@ -208,6 +136,9 @@ public class AISearchService {
 
             // Replace newlines with spaces to avoid JSON parse issues
             input = input.replace("\n", "    ");
+
+            // Escape double quotes to ensure valid JSON
+            input = input.replace("\"", "\\\"");
 
             // Prepare the request payload
             String payload = """
@@ -240,6 +171,7 @@ public class AISearchService {
                         response.append(line);
                     }
                     LOG.info("OpenAI API Response: {}", response);
+                    finalResponse = response.toString();
                     return response.toString();
                 }
             } else {
@@ -257,10 +189,12 @@ public class AISearchService {
                     LOG.error("Failed to read OpenAI API error response: {}", e.getMessage(), e);
                 }
 
+                finalResponse = "Error: Failed to process AI request.";
                 return "Error: Failed to process AI request.";
             }
         } catch (Exception e) {
             LOG.error("Error calling OpenAI API: ", e);
+            finalResponse = "Error: " + e.getMessage();
             return "Error: " + e.getMessage();
         }
     }

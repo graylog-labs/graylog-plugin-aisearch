@@ -28,5 +28,18 @@ public class AISearchResource implements PluginRestResource {
         //return aiSearchService.fetchLogsFromGraylog();
         return aiSearchService.doFetchLogic();
     }
+
+    @GET
+    @Path("/old-logs")
+    public String oldLogs() {
+        //String json = "{\"message\": \"Hello World!\"}";
+        //return json;
+
+        String json = aiSearchService.returnResponse();
+        if (!json.equals("Initial Render")){
+            return json;
+        }
+        else return "{\"message\": \"Fail\"}";
+    }
 }
 
