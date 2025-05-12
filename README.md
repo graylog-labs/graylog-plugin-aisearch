@@ -15,4 +15,4 @@ and can be configured in your `graylog.conf` file. Restart `graylog-server` and 
 
 ## Usage
 
-(coming soon!)
+https://github.com/user-attachments/assets/1348542b-c616-4d2f-a938-6887ca795e42
